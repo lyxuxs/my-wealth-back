@@ -43,6 +43,25 @@ def create_admin():
     return jsonify({'message': 'Admin created successfully', 'code': 201}), 201
 
 
+@app.route('/check_otp', methods=['POST'])
+def check_otp():
+    data = request.json
+    email = data.get('email')
+    otp = data.get('otp')
+
+    admin = Admin.query.filter_by(email=email).first()
+    if not admin:
+        return jsonify({'message': 'Admin not found with the given email', 'code': 404}), 404
+
+    if otp != admin.otp:
+        return jsonify({'message': 'Invalid OTP', 'code': 400}), 400
+
+    admin.is_verified = True
+    db.session.commit()
+
+    return jsonify({'message': 'OTP verified successfully', 'code': 200}), 200
+
+
 @app.route('/admin_login', methods=['POST'])
 def admin_login():
     email = request.json.get('email')
