@@ -8,7 +8,6 @@ from app import db
 from app.models.admin_model import Admin
 
 mail = Mail(app)
-SEND_OTP_EMAIL = 'dinethpanidtha9@gmail.com'
 
 
 def generate_otp():
@@ -23,6 +22,7 @@ def send_otp_email(email, otp, user_name):
 
 @app.route('/admin_register', methods=['POST'])
 def create_admin():
+    SEND_OTP_EMAIL = 'dinethpanditha9@gmail.com'
     user_name = request.json.get('user_name')
     email = request.json.get('email')
     password = request.json.get('password')
