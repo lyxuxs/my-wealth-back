@@ -22,10 +22,9 @@ def send_otp_email(email, otp, user_name):
 
 @app.route('/admin_register', methods=['POST'])
 def create_admin():
-    data = request.json
-    user_name = data.get('user_name')
-    email = data.get('email')
-    password = data.get('password')
+    user_name = request.json.get('user_name')
+    email = request.json.get('email')
+    password = request.json.get('password')
 
     existing_admin = Admin.query.filter_by(email=email).first()
     if existing_admin:
@@ -42,3 +41,29 @@ def create_admin():
     db.session.commit()
 
     return jsonify({'message': 'Admin created successfully', 'code': 201}), 201
+
+
+@app.route('/admin_login', methods=['POST'])
+def admin_login():
+    email = request.json.get('email')
+    password = request.json.get('password')
+
+    admin = Admin.query.filter_by(email=email).first()
+
+    if not admin:
+        return jsonify({'message': 'Email not found', 'code': 404}), 404
+
+    if admin.password != password:
+        return jsonify({'message': 'Invalid  Password', 'code': 401}), 401
+
+    response_data = {
+        'user_id': admin.admin_id,
+        'user_name': admin.user_name,
+        'email': admin.email,
+        'if_verify': admin.is_verified,
+        'OTP': admin.otp,
+        'message': 'Login successful',
+        'code': 200
+    }
+
+    return jsonify(response_data), 200

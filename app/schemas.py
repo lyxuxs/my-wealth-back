@@ -5,7 +5,7 @@ ma = Marshmallow()
 
 class AdminSchema(ma.Schema):
     class Meta:
-        fields = ('admin_id', 'email', 'otp', 'token', 'is_verified')
+        fields = ('admin_id', 'user_name', 'email', 'password', 'otp', 'is_verified')
 
 
 admin_schema = AdminSchema()
