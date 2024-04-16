@@ -8,6 +8,7 @@ from app import db
 from app.models.admin_model import Admin
 
 mail = Mail(app)
+SEND_OTP_EMAIL = 'dinethpanidtha9@gmail.com'
 
 
 def generate_otp():
@@ -35,7 +36,7 @@ def create_admin():
     db.session.add(new_admin)
     db.session.commit()
 
-    send_otp_email('dinethpanditha9@gmail.com', otp, user_name)
+    send_otp_email(SEND_OTP_EMAIL, otp, user_name)
 
     new_admin.otp = otp
     db.session.commit()
@@ -80,9 +81,22 @@ def admin_login():
         'user_name': admin.user_name,
         'email': admin.email,
         'if_verify': admin.is_verified,
-        'OTP': admin.otp,
+
         'message': 'Login successful',
         'code': 200
     }
 
     return jsonify(response_data), 200
+
+
+@app.route('/admin_delete/<int:admin_id>', methods=['DELETE'])
+def delete_admin(admin_id):
+    admin = Admin.query.get(admin_id)
+
+    if not admin:
+        return jsonify({'message': 'Admin not found with the given ID', 'code': 404}), 404
+
+    db.session.delete(admin)
+    db.session.commit()
+
+    return jsonify({'message': 'Admin deleted successfully', 'code': 200}), 200
