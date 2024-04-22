@@ -104,3 +104,27 @@ def get_packages():
         response_data.append(package_data)
 
     return jsonify(response_data)
+
+
+@app.route('/search_package_by_fund', methods=['POST'])
+def search_package_by_fund():
+    personal_fund = float(request.form.get('personalFund'))
+
+    package = Package.query.filter(Package.personalMinFund <= personal_fund,
+                                   Package.personalMaxFund >= personal_fund).first()
+
+    if package:
+
+        response_data = {
+            'packageName': package.packageName,
+            'personalMinFund': package.personalMinFund,
+            'personalMaxFund': package.personalMaxFund,
+            'rebateFee': package.rebateFee,
+            'packageID': package.packageID,
+            'message': 'Package Found',
+            'code': 200
+        }
+        return jsonify(response_data), 200
+    else:
+
+        return jsonify({'message': 'Package Not Found for the given fund', 'code': 404}), 404
