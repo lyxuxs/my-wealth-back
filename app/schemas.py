@@ -13,6 +13,12 @@ class MainAdminSchema(ma.Schema):
         fields = ('email', 'name', 'password', 'adminReferral')
 
 
+class PackageSchema(ma.Schema):
+    class Meta:
+        fields = ('packageID', 'packageName', 'personalMinFund', 'personalMaxFund', 'rebateFee')
+
+
+package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
 
 admin_schema = AdminSchema()
