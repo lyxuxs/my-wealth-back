@@ -7,7 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     myReferral = db.Column(db.String(100), nullable=False)
-    friendReferral = db.Column(db.String(100), nullable=False)
+    friendReferral = db.Column(db.String(100), nullable=True)
     spotBalance = db.Column(db.Float, nullable=False)
     fundingBalance = db.Column(db.Float, nullable=False)
     profit = db.Column(db.Float, nullable=False)

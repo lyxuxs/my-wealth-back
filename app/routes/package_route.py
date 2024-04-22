@@ -35,7 +35,7 @@ def create_package():
     return jsonify(response_data), 200
 
 
-@app.route('/update_package', methods=['POST'])
+@app.route('/update_package', methods=['PUT'])
 def update_package():
     package_id = request.form.get('packageID')
     package_name = request.form.get('packageName')
@@ -68,7 +68,7 @@ def update_package():
 
 
 @app.route('/search_package', methods=['POST'])
-def search_package():
+def search_package_by_id():
     package_id = request.form.get('packageID')
 
     package = Package.query.get(package_id)

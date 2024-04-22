@@ -1032,7 +1032,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <schema id="300" parent="1" name="my_wealth">
-      <LastIntrospectionLocalTimestamp>2024-04-22.10:49:41</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2024-04-22.14:01:56</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <schema id="301" parent="1" name="mylibuary">
@@ -1201,7 +1201,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <UnderlyingIndexName>adminReferral</UnderlyingIndexName>
     </key>
     <column id="340" parent="316" name="packageID">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>2</AutoIncrement>
       <DasType>int|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -1237,7 +1237,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="347" parent="317" name="userID">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>3</AutoIncrement>
       <DasType>int|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -1264,7 +1264,6 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
     </column>
     <column id="352" parent="317" name="friendReferral">
       <DasType>varchar(100)|0s</DasType>
-      <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
     <column id="353" parent="317" name="spotBalance">
