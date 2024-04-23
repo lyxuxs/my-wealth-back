@@ -157,3 +157,31 @@ def user_update(userID):
     }
 
     return jsonify(response_data), 200
+
+
+
+
+@app.route('/search_user_by_id', methods=['GET'])
+def search_user_by_id():
+    user_id = request.form.get('userID')
+
+    user = User.query.filter_by(userID=user_id).first()
+    if user:
+        response_data = {
+            'name': user.name,
+            'email': user.email,
+            'myReferral': user.myReferral,
+            'friendReferral': user.friendReferral,
+            'spotBalance': user.spotBalance,
+            'fundingBalance': user.fundingBalance,
+            'profit': user.profit,
+            'RT': user.RT,
+            'isVerify': user.isVerify,
+            'OTP': user.OTP,
+            'userID': user.userID,
+            'message': 'Found User',
+            'code': 200
+        }
+        return jsonify(response_data), 200
+    else:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
