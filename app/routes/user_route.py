@@ -2,18 +2,9 @@ import random
 import uuid
 
 from flask import jsonify, request
-from flask_mail import Mail, Message
 
 from app import app, db
 from app.models.user_model import User
-
-mail = Mail(app)
-
-
-def send_otp_email(email, name, otp):
-    msg = Message('User Registration OTP', recipients=[email])
-    msg.body = f'Hello {name}, Your Registration OTP is: {otp}'
-    mail.send(msg)
 
 
 def generate_referral_code():
@@ -35,7 +26,6 @@ def user_register():
     my_referral = generate_referral_code()
     otp = generate_otp()
 
-    send_otp_email(email, name, otp)
     new_user = User(
         packageID=package_id,
         name=name,
@@ -73,13 +63,12 @@ def user_register():
     return jsonify(response_data), 200
 
 
-@app.route('/check_friend_referral', methods=['GET'])
-def check_friend_referral():
-    friend_referral = request.args.get('friendReferral')
+@app.route('/check_my_referral', methods=['GET'])
+def check_my_referral():
+    my_referral = request.args.get('myReferral')
 
-    user = User.query.filter_by(friendReferral=friend_referral).first()
+    user = User.query.filter_by(myReferral=my_referral).first()
     if user:
         return jsonify({'message': 'User found', 'code': 200}), 200
     else:
         return jsonify({'message': 'User not found', 'code': 404}), 404
-

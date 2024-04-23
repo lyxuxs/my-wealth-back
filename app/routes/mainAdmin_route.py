@@ -1,3 +1,5 @@
+import hashlib
+
 from flask import jsonify, request
 
 from app import app
@@ -11,11 +13,12 @@ def create_main_admin():
     email = request.form.get('email')
     password = request.form.get('password')
     admin_referral = request.form.get('adminReferral')
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
     if MainAdmin.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already exists', 'code': 400}), 400
 
-    new_main_admin = MainAdmin(name=name, email=email, password=password, adminReferral=admin_referral)
+    new_main_admin = MainAdmin(name=name, email=email, password=hashed_password, adminReferral=admin_referral)
 
     db.session.add(new_main_admin)
 
@@ -27,6 +30,7 @@ def create_main_admin():
 @app.route('/main_admin_update/<email>', methods=['PUT'])
 def update_main_admin(email):
     name = request.form.get('name')
+    password = request.form.get('password')
     admin_referral = request.form.get('adminReferral')
 
     main_admin = MainAdmin.query.filter_by(email=email).first()
@@ -36,6 +40,9 @@ def update_main_admin(email):
 
     if name:
         main_admin.name = name
+    if password:
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        main_admin.password = hashed_password
     if admin_referral:
         main_admin.adminReferral = admin_referral
 
