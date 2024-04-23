@@ -1,7 +1,8 @@
+import hashlib
 import random
 import uuid
 
-from flask import jsonify, request
+from flask import request, jsonify
 
 from app import app, db
 from app.models.user_model import User
@@ -22,7 +23,7 @@ def user_register():
     email = request.form.get('email')
     password = request.form.get('password')
     friend_referral = request.form.get('friendReferral')
-
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
     my_referral = generate_referral_code()
     otp = generate_otp()
 
@@ -30,7 +31,7 @@ def user_register():
         packageID=package_id,
         name=name,
         email=email,
-        password=password,
+        password=hashed_password,
         myReferral=my_referral,
         friendReferral=friend_referral,
         spotBalance=0,
@@ -72,3 +73,39 @@ def check_my_referral():
         return jsonify({'message': 'User found', 'code': 200}), 200
     else:
         return jsonify({'message': 'User not found', 'code': 404}), 404
+
+
+
+@app.route('/user_login', methods=['POST'])
+def user_login():
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        if user.password == hashed_password:
+            response_data = {
+                'name': user.name,
+                'email': user.email,
+                'myReferral': user.myReferral,
+                'friendReferral': user.friendReferral,
+                'spotBalance': user.spotBalance,
+                'fundingBalance': user.fundingBalance,
+                'profit': user.profit,
+                'RT': user.RT,
+                'isVerify': user.isVerify,
+                'OTP': user.OTP,
+                'userID': user.userID,
+                'message': 'Success',
+                'code': 200
+            }
+            return jsonify(response_data), 200
+        else:
+            return jsonify({'message': 'Invalid credentials', 'code': 401}), 401
+    else:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
+
+
+# user update
