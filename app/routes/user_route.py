@@ -3,9 +3,17 @@ import random
 import uuid
 
 from flask import request, jsonify
+from flask_mail import Message
 
 from app import app, db
 from app.models.user_model import User
+from app.routes.admin_route import mail
+
+
+def send_otp_email(email, otp):
+    msg = Message('New User Registration OTP', recipients=[email])
+    msg.body = f'Hello, your registration OTP is: {otp}'
+    mail.send(msg)
 
 
 def generate_referral_code():
@@ -284,3 +292,28 @@ def get_all_rt_users_balance():
     }
 
     return jsonify(response_data)
+
+
+@app.route('/send_otp', methods=['POST'])
+def send_otp():
+    user_id = request.form.get('userID')
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
+
+    otp = generate_otp()
+
+    encrypted_otp = hashlib.sha256(str(otp).encode()).hexdigest()
+
+    user.OTP = encrypted_otp
+    db.session.commit()
+
+    send_otp_email(user.email, otp)
+
+    response_data = {
+        'message': 'OTP sent',
+        'code': 200
+    }
+
+    return jsonify(response_data), 200
