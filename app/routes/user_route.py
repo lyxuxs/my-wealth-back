@@ -242,3 +242,15 @@ def get_all_users_total_balance():
     }
 
     return jsonify(response_data)
+
+
+@app.route('/rt_funding_balance', methods=['GET'])
+def get_all_rt_users_funding_balance():
+    rt_users = User.query.filter_by(RT=True).all()
+    total_funding_balance = sum(user.fundingBalance for user in rt_users)
+
+    response_data = {
+        'Total_RT_Funding_Balance': total_funding_balance
+    }
+
+    return jsonify(response_data)
