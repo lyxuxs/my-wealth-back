@@ -16,6 +16,18 @@ def generate_otp():
     return random.randint(1000, 9999)
 
 
+@app.route('/check_friend_referral', methods=['GET'])
+def check_friend_referral():
+    friend_referral = request.form.get('friendReferral')
+
+    user = User.query.filter_by(friendReferral=friend_referral).first()
+
+    if user:
+        return jsonify({'message': 'User found', 'code': 200}), 200
+    else:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
+
+
 @app.route('/user_register', methods=['POST'])
 def user_register():
     package_id = request.form.get('packageID')
