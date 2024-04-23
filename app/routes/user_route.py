@@ -229,3 +229,16 @@ def get_all_users_spot_balance():
     }
 
     return jsonify(response_data)
+
+
+@app.route('/users_total_balance', methods=['GET'])
+def get_all_users_total_balance():
+    total_spot_balance = sum(user.spotBalance for user in User.query.all())
+    total_funding_balance = sum(user.fundingBalance for user in User.query.all())
+    total_balance = total_spot_balance + total_funding_balance
+
+    response_data = {
+        'total_balance': total_balance
+    }
+
+    return jsonify(response_data)
