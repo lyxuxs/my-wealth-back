@@ -85,30 +85,30 @@ def user_login():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    user =User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first()
 
-    if user:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if user.password == hashed_password:
-            response_data = {
-                'name': user.name,
-                'email': user.email,
-                'myReferral': user.myReferral,
-                'friendReferral': user.friendReferral,
-                'spotBalance': user.spotBalance,
-                'fundingBalance': user.fundingBalance,
-                'profit': user.profit,
-                'RT': user.RT,
-                'isVerify': user.isVerify,
-                'userID': user.userID,
-                'message': 'Success',
-                'code': 200
-            }
-            return jsonify(response_data), 200
-        else:
-            return jsonify({'message': 'Invalid credentials', 'code': 401}), 401
-    else:
-        return jsonify({'message': 'User not found', 'code': 404}), 404
+    if not user:
+        return jsonify({'message': 'User Email not found', 'code': 404}), 404
+
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    if user.password != hashed_password:
+        return jsonify({'message': 'Invalid credentials', 'code': 401}), 401
+
+    response_data = {
+        'name': user.name,
+        'email': user.email,
+        'myReferral': user.myReferral,
+        'friendReferral': user.friendReferral,
+        'spotBalance': user.spotBalance,
+        'fundingBalance': user.fundingBalance,
+        'profit': user.profit,
+        'RT': user.RT,
+        'isVerify': user.isVerify,
+        'userID': user.userID,
+        'message': 'Success',
+        'code': 200
+    }
+    return jsonify(response_data), 200
 
 
 @app.route('/user_update/<int:userID>', methods=['PUT'])
