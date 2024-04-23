@@ -75,7 +75,6 @@ def check_my_referral():
         return jsonify({'message': 'User not found', 'code': 404}), 404
 
 
-
 @app.route('/user_login', methods=['POST'])
 def user_login():
     email = request.form.get('email')
@@ -159,8 +158,6 @@ def user_update(userID):
     return jsonify(response_data), 200
 
 
-
-
 @app.route('/search_user_by_id', methods=['GET'])
 def search_user_by_id():
     user_id = request.form.get('userID')
@@ -185,8 +182,6 @@ def search_user_by_id():
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'User not found', 'code': 404}), 404
-
-
 
 
 @app.route('/get_all_users', methods=['GET'])
@@ -214,8 +209,6 @@ def get_all_users():
     return jsonify(response_data)
 
 
-
-
 @app.route('/all_funding_balance', methods=['GET'])
 def get_all_users_funding_balance():
     users = User.query.all()
@@ -227,3 +220,12 @@ def get_all_users_funding_balance():
     return jsonify(response_data)
 
 
+@app.route('/users_spot_balance', methods=['GET'])
+def get_all_users_spot_balance():
+    total_spot_balance = sum(user.spotBalance for user in User.query.all())
+
+    response_data = {
+        'total_spot_balance': total_spot_balance
+    }
+
+    return jsonify(response_data)
