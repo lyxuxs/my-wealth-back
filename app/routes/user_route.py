@@ -265,3 +265,18 @@ def get_all_rt_users_spot_balance():
     }
 
     return jsonify(response_data)
+
+
+@app.route('/all_rt_users_balance', methods=['GET'])
+def get_all_rt_users_balance():
+    rt_users = User.query.filter_by(RT=True).all()
+
+    total_spot_balance = sum(user.spotBalance for user in rt_users)
+    total_funding_balance = sum(user.fundingBalance for user in rt_users)
+    total_balance = total_spot_balance + total_funding_balance
+
+    response_data = {
+        'total_balance': total_balance
+    }
+
+    return jsonify(response_data)
