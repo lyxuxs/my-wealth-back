@@ -11,7 +11,6 @@ from app.models.user_model import User
 def generate_referral_code():
     return str(uuid.uuid4().hex)[:6]
 
-
 def generate_otp():
     return random.randint(1000, 9999)
 
