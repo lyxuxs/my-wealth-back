@@ -107,7 +107,6 @@ def user_login():
         return jsonify({'message': 'User not found', 'code': 404}), 404
 
 
-# user update
 @app.route('/user_update/<int:userID>', methods=['PUT'])
 def user_update(userID):
     user = User.query.get(userID)
@@ -251,6 +250,18 @@ def get_all_rt_users_funding_balance():
 
     response_data = {
         'Total_RT_Funding_Balance': total_funding_balance
+    }
+
+    return jsonify(response_data)
+
+
+@app.route('/rt_users_spot_balance', methods=['GET'])
+def get_all_rt_users_spot_balance():
+    rt_users = User.query.filter_by(RT=True).all()
+    total_spot_balance = sum(user.spotBalance for user in rt_users)
+
+    response_data = {
+        'total_spot_balance': total_spot_balance
     }
 
     return jsonify(response_data)
