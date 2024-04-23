@@ -185,3 +185,30 @@ def search_user_by_id():
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'User not found', 'code': 404}), 404
+
+
+
+
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users():
+    users = User.query.all()
+    user_list = []
+    for user in users:
+        user_data = {
+            'name': user.name,
+            'email': user.email,
+            'myReferral': user.myReferral,
+            'friendReferral': user.friendReferral,
+            'spotBalance': user.spotBalance,
+            'fundingBalance': user.fundingBalance,
+            'profit': user.profit,
+            'RT': user.RT,
+            'isVerify': user.isVerify,
+            'userID': user.userID
+        }
+        user_list.append(user_data)
+
+    response_data = {
+        'users': user_list
+    }
+    return jsonify(response_data)
