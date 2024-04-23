@@ -109,3 +109,51 @@ def user_login():
 
 
 # user update
+@app.route('/user_update/<int:userID>', methods=['PUT'])
+def user_update(userID):
+    user = User.query.get(userID)
+
+    if not user:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
+
+    data = request.form
+
+    if 'name' in data:
+        user.name = data['name']
+    if 'email' in data:
+        user.email = data['email']
+    if 'password' in data:
+        hashed_password = hashlib.sha256(data['password'].encode()).hexdigest()
+        user.password = hashed_password
+    if 'spotBalance' in data:
+        user.spotBalance = float(data['spotBalance'])
+    if 'fundingBalance' in data:
+        user.fundingBalance = float(data['fundingBalance'])
+    if 'profit' in data:
+        user.profit = float(data['profit'])
+    if 'RT' in data:
+        user.RT = data['RT'] == 'true'
+    if 'isVerify' in data:
+        user.isVerify = data['isVerify'] == 'true'
+    if 'OTP' in data:
+        user.OTP = int(data['OTP'])
+
+    db.session.commit()
+
+    response_data = {
+        'name': user.name,
+        'email': user.email,
+        'myReferral': user.myReferral,
+        'friendReferral': user.friendReferral,
+        'spotBalance': user.spotBalance,
+        'fundingBalance': user.fundingBalance,
+        'profit': user.profit,
+        'RT': user.RT,
+        'isVerify': user.isVerify,
+        'OTP': user.OTP,
+        'userID': user.userID,
+        'message': 'Update Success',
+        'code': 200
+    }
+
+    return jsonify(response_data), 200
