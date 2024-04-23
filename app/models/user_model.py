@@ -13,7 +13,7 @@ class User(db.Model):
     profit = db.Column(db.Float, nullable=False)
     RT = db.Column(db.Boolean, default=False, nullable=False)
     isVerify = db.Column(db.Boolean, default=False, nullable=False)
-    OTP = db.Column(db.Integer, nullable=False)
+    OTP = db.Column(db.String(255), nullable=False)
     packageID = db.Column(db.Integer, db.ForeignKey('package.packageID'), nullable=False)
 
     package = db.relationship('Package', backref=db.backref('users', lazy=True))
