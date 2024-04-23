@@ -317,3 +317,41 @@ def send_otp():
     }
 
     return jsonify(response_data), 200
+
+
+@app.route('/check_user_OTP', methods=['GET'])
+def check_user_otp():
+    user_id = request.form.get('userID')
+    otp_entered = request.form.get('OTP')
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found', 'code': 404}), 404
+
+    decrypted_stored_otp = user.OTP
+
+    encrypted_entered_otp = hashlib.sha256(str(otp_entered).encode()).hexdigest()
+
+    if decrypted_stored_otp == encrypted_entered_otp:
+        user.isVerify = True
+        db.session.commit()
+
+        response_data = {
+            'name': user.name,
+            'email': user.email,
+            'myReferral': user.myReferral,
+            'friendReferral': user.friendReferral,
+            'spotBalance': user.spotBalance,
+            'fundingBalance': user.fundingBalance,
+            'profit': user.profit,
+            'RT': user.RT,
+            'isVerify': True,
+            'userID': user.userID,
+            'message': 'OTP verified successfully',
+            'code': 200
+        }
+
+        return jsonify(response_data), 200
+    else:
+        return jsonify({'message': 'Invalid OTP', 'code': 401}), 401
