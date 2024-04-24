@@ -37,7 +37,13 @@ class UserSchema(ma.Schema):
         )
 
 
+class TransferSchema(ma.Schema):
+    class Meta:
+        fields = ('transferID', 'dateTime', 'From', 'to', 'receiver', 'userID')
+
+
 user_schema = UserSchema()
 package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
 admin_schema = AdminSchema()
+transfer_schema = TransferSchema()
