@@ -39,7 +39,7 @@ class UserSchema(ma.Schema):
 
 class TransferSchema(ma.Schema):
     class Meta:
-        fields = ('transferID', 'dateTime', 'From', 'to', 'receiver', 'userID')
+        fields = ('transferID', 'dateTime', 'amount', 'From', 'to', 'userID')
 
 
 user_schema = UserSchema()
