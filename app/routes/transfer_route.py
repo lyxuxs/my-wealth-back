@@ -164,3 +164,43 @@ def search_transfer_by_user_and_date_this_week():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_month', methods=['GET'])
+def search_transfer_by_user_and_date_this_month():
+    try:
+
+        user_id = int(request.form.get('userID'))
+
+        today = datetime.today()
+        start_of_month = today.replace(day=1)
+        end_of_month = start_of_month.replace(month=start_of_month.month + 1) - timedelta(days=1)
+
+        transfers = Transfer.query.filter_by(userID=user_id).filter(
+            Transfer.dateTime >= start_of_month,
+            Transfer.dateTime <= end_of_month
+        ).all()
+
+        if not transfers:
+            return jsonify({'message': 'No transfers found for the user this month', 'code': 'NO_TRANSFERS_FOUND'}), 404
+
+        response_data = []
+        for transfer in transfers:
+            transfer_info = {
+                'data&Time': transfer.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': transfer.amount,
+                'From': transfer.From,
+                'to': transfer.to,
+                'TransferID': transfer.transferID,
+                'UserID': transfer.userID,
+                'message': 'Transfer details for the user this month',
+                'Code': 'TRANSFER_DETAILS'
+            }
+            response_data.append(transfer_info)
+
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+
