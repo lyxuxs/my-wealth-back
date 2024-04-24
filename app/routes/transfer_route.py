@@ -13,10 +13,6 @@ from app.schemas import transfer_schema
 def create_transfer():
     data = request.form
 
-    errors = transfer_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
-
     amount = float(data['amount'])
     from_account = data['From']
     to_account = data['to']
@@ -201,6 +197,3 @@ def search_transfer_by_user_and_date_this_month():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
-
-
