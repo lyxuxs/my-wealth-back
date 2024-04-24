@@ -197,3 +197,42 @@ def search_transfer_by_user_and_date_this_month():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_custom', methods=['GET'])
+def search_transfer_by_user_and_custom_date_range():
+    try:
+
+        user_id = int(request.form.get('userID'))
+        from_date = request.form.get('fromDate')
+        to_date = request.form.get('toDate')
+
+        from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        to_date = datetime.strptime(to_date, '%Y-%m-%d')
+
+        transfers = Transfer.query.filter_by(userID=user_id).filter(
+            Transfer.dateTime >= from_date,
+            Transfer.dateTime <= to_date
+        ).all()
+
+        if not transfers:
+            return jsonify({'message': 'No transfers found for the user within the specified date range',
+                            'code': 'NO_TRANSFERS_FOUND'}), 404
+
+        response_data = []
+        for transfer in transfers:
+            transfer_info = {
+                'data&Time': transfer.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': transfer.amount,
+                'From': transfer.From,
+                'to': transfer.to,
+                'TransferID': transfer.transferID,
+                'UserID': transfer.userID,
+                'message': 'Transfer details for the user within the specified date range',
+                'Code': 'TRANSFER_DETAILS'
+            }
+            response_data.append(transfer_info)
+
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
