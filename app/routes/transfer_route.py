@@ -1,5 +1,5 @@
 from datetime import date
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import request, jsonify
 
@@ -93,7 +93,7 @@ def search_transfer_by_user_id():
     return jsonify(transfer_data), 200
 
 
-@app.route('/search_today', methods=['POST'])
+@app.route('/search_today', methods=['GET'])
 def search_transfer_by_user_and_date_today():
     try:
 
@@ -127,3 +127,40 @@ def search_transfer_by_user_and_date_today():
         db.session.rollback()
         return jsonify(
             {'message': 'An error occurred while processing the request', 'error': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_week', methods=['GET'])
+def search_transfer_by_user_and_date_this_week():
+    try:
+
+        user_id = int(request.form.get('userID'))
+
+        today = datetime.today()
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+
+        transfers = Transfer.query.filter_by(userID=user_id).filter(
+            Transfer.dateTime >= start_of_week,
+            Transfer.dateTime <= end_of_week
+        ).all()
+
+        if not transfers:
+            return jsonify({'message': 'No transfers found for the user this week', 'code': 'NO_TRANSFERS_FOUND'}), 404
+
+        response_data = []
+        for transfer in transfers:
+            transfer_info = {
+                'data&Time': transfer.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': transfer.amount,
+                'From': transfer.From,
+                'to': transfer.to,
+                'TransferID': transfer.transferID,
+                'UserID': transfer.userID,
+                'message': 'Transfer details for the user this week',
+                'Code': 'TRANSFER_DETAILS'
+            }
+            response_data.append(transfer_info)
+
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
