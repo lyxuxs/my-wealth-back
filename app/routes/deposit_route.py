@@ -285,7 +285,7 @@ def update_deposit_status():
     try:
 
         deposit_id = int(request.form.get('DepositID'))
-        status = str(request.form.get('Status'))
+        status = str(request.form.get('status'))
 
         deposit = Deposit.query.get(deposit_id)
         if not deposit:
@@ -306,29 +306,5 @@ def update_deposit_status():
         db.session.commit()
 
         return jsonify({'message': 'Deposit status updated successfully', 'code': 'DEPOSIT_STATUS_UPDATED'}), 200
-    except Exception as e:
-        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
-
-@app.route('/all_transactions', methods=['GET'])
-def get_all_transactions():
-    try:
-
-        transactions = Transaction.query.all()
-
-        transaction_data = []
-        for transaction in transactions:
-            transaction_info = {
-                'TransactionID': transaction.transactionID,
-                'Username': transaction.username,
-                'Amount': transaction.amount,
-                'DateTime': transaction.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
-                'TransactionType': transaction.transactionType,
-                'Status': transaction.status,
-                'UserID': transaction.userID
-            }
-            transaction_data.append(transaction_info)
-
-        return jsonify(transaction_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
