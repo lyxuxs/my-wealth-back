@@ -278,3 +278,33 @@ def get_all_deposits():
     except Exception as e:
 
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/update_deposit_status', methods=['PUT'])
+def update_deposit_status():
+    try:
+
+        deposit_id = int(request.form.get('DepositID'))
+        status = str(request.form.get('Status'))
+
+        deposit = Deposit.query.get(deposit_id)
+        if not deposit:
+            return jsonify({'message': 'Deposit not found', 'code': 'DEPOSIT_NOT_FOUND'}), 404
+
+        deposit.status = status
+
+        transaction = Transaction.query.filter_by(depositID=deposit_id).first()
+        if transaction:
+            transaction.status = status
+
+        if status == 'Approved':
+            user = User.query.get(deposit.userID)
+            if not user:
+                return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
+            user.fundingBalance += deposit.amount
+
+        db.session.commit()
+
+        return jsonify({'message': 'Deposit status updated successfully', 'code': 'DEPOSIT_STATUS_UPDATED'}), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
