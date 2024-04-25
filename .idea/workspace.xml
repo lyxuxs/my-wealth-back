@@ -112,7 +112,7 @@
       <workItem from="1713805755430" duration="7000" />
       <workItem from="1713841310163" duration="36910000" />
       <workItem from="1713925716465" duration="24485000" />
-      <workItem from="1714012238920" duration="9772000" />
+      <workItem from="1714012238920" duration="10120000" />
     </task>
     <servers />
   </component>
@@ -166,6 +166,6 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/my_wealth_back$run.coverage" NAME="run Coverage Results" MODIFIED="1714023600797" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/my_wealth_back$run.coverage" NAME="run Coverage Results" MODIFIED="1714024047370" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

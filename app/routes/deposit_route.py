@@ -110,6 +110,7 @@ def search_deposits_by_user_id():
                 'status': deposit.status,
                 'DepositID': deposit.depositID,
                 'UserID': deposit.userID,
+                'UserName': deposit.username,
             }
             deposit_data.append(deposit_info)
 
@@ -138,6 +139,7 @@ def search_deposits_by_status():
                 'status': deposit.status,
                 'DepositID': deposit.depositID,
                 'UserID': deposit.userID,
+                'UserName': deposit.username,
             }
             deposit_data.append(deposit_info)
 
@@ -210,6 +212,7 @@ def search_deposit_by_month():
                 'status': deposit.status,
                 'DepositID': deposit.depositID,
                 'UserID': deposit.userID,
+                'UserName': deposit.username,
             }
             deposit_data.append(deposit_info)
 
@@ -243,6 +246,31 @@ def search_deposit_by_custom_date():
                 'status': deposit.status,
                 'DepositID': deposit.depositID,
                 'UserID': deposit.userID,
+                'UserName': deposit.username,
+            }
+            deposit_data.append(deposit_info)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/get_all_deposits', methods=['GET'])
+def get_all_deposits():
+    try:
+
+        deposits = Deposit.query.all()
+
+        deposit_data = []
+        for deposit in deposits:
+            deposit_info = {
+                'DepositID': deposit.depositID,
+                'UserID': deposit.userID,
+                'UserName': deposit.username,
+                'Amount': deposit.amount,
+                'dateTime': deposit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Status': deposit.status
             }
             deposit_data.append(deposit_info)
 
