@@ -24,6 +24,9 @@ def add_withdrawal():
         if not user:
             return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
 
+        if user.fundingBalance < amount:
+            return jsonify({'message': 'Insufficient funds', 'code': 'INSUFFICIENT_FUNDS'}), 400
+
         withdrawal = Withdrawal(
             username=user.name,
             amount=amount,
