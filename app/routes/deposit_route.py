@@ -60,3 +60,32 @@ def add_deposit():
         return jsonify(response_data), 201
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_deposit', methods=['GET'])
+def search_deposit_by_id():
+    try:
+        deposit_id = int(request.form.get('depositID'))
+
+        deposit = Deposit.query.get(deposit_id)
+
+        if not deposit:
+            return jsonify({'message': 'Deposit not found', 'code': 'DEPOSIT_NOT_FOUND'}), 404
+
+        deposit_schema = DepositSchema()
+        deposit_data = deposit_schema.dump(deposit)
+
+        response_data = {
+            'username': deposit_data['username'],
+            'Amount': deposit_data['amount'],
+            'date&Time': deposit_data['dateTime'],
+            'status': deposit_data['status'],
+            'DepositID': deposit_data['depositID'],
+            'UserID': deposit_data['userID'],
+            'message': 'Deposit details retrieved successfully',
+            'code': 200
+        }
+
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
