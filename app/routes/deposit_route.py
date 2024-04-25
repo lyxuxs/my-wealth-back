@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from flask import jsonify, request
 
@@ -140,6 +140,26 @@ def search_deposits_by_status():
                 'UserID': deposit.userID,
             }
             deposit_data.append(deposit_info)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_deposit_today', methods=['GET'])
+def search_deposit_today():
+    try:
+
+        today = date.today()
+
+        deposits = Deposit.query.filter(db.func.date(Deposit.dateTime) == today).all()
+
+        if not deposits:
+            return jsonify({'message': 'No deposits found for today', 'code': 'NO_DEPOSITS_FOUND'}), 404
+
+        deposit_schema = DepositSchema(many=True)
+        deposit_data = deposit_schema.dump(deposits)
 
         return jsonify(deposit_data), 200
     except Exception as e:
