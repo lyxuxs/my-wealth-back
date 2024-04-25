@@ -89,3 +89,32 @@ def search_deposit_by_id():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/deposit_by_user_id', methods=['GET'])
+def search_deposits_by_user_id():
+    try:
+
+        user_id = int(request.form.get('UserID'))
+
+        deposits = Deposit.query.filter_by(userID=user_id).all()
+
+        if not deposits:
+            return jsonify({'message': 'No deposits found for the user', 'code': 'NO_DEPOSITS_FOUND'}), 404
+
+        deposit_data = []
+        for deposit in deposits:
+            deposit_info = {
+                'date&Time': deposit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': deposit.amount,
+                'status': deposit.status,
+                'DepositID': deposit.depositID,
+                'UserID': deposit.userID,
+            }
+            deposit_data.append(deposit_info)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
