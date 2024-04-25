@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 
 from flask import jsonify, request
 
@@ -162,6 +162,42 @@ def search_withdrawal_by_date_today():
 
         if not withdrawals:
             return jsonify({'message': 'No withdrawals found for today', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
+
+        withdrawal_data = []
+        for withdrawal in withdrawals:
+            withdrawal_info = {
+                'WithdrawalID': withdrawal.withdrawalID,
+                'Username': withdrawal.username,
+                'Amount': withdrawal.amount,
+                'DateTime': withdrawal.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Status': withdrawal.status,
+                'UserID': withdrawal.userID
+            }
+            withdrawal_data.append(withdrawal_info)
+
+        return jsonify(withdrawal_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+from datetime import datetime, timedelta
+
+
+@app.route('/withdrawal_by_week', methods=['GET'])
+def search_withdrawal_by_date_week():
+    try:
+
+        today = datetime.now()
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+
+        withdrawals = Withdrawal.query.filter(
+            Withdrawal.dateTime >= start_of_week,
+            Withdrawal.dateTime <= end_of_week
+        ).all()
+
+        if not withdrawals:
+            return jsonify({'message': 'No withdrawals found for this week', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
 
         withdrawal_data = []
         for withdrawal in withdrawals:
