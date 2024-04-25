@@ -282,3 +282,20 @@ def search_withdrawal_by_custom_date():
         return jsonify(withdrawal_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/get_all_withdrawals', methods=['GET'])
+def get_all_withdrawals():
+    try:
+
+        withdrawals = Withdrawal.query.all()
+
+        if not withdrawals:
+            return jsonify({'message': 'No withdrawals found', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
+
+        withdrawal_schema = WithdrawalSchema(many=True)
+        withdrawals_data = withdrawal_schema.dump(withdrawals)
+
+        return jsonify(withdrawals_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
