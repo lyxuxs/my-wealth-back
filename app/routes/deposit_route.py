@@ -166,3 +166,24 @@ def search_deposit_today():
 
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
+
+@app.route('/search_deposit_week', methods=['GET'])
+def search_deposit_week():
+    try:
+
+        today = datetime.today()
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+
+        deposits = Deposit.query.filter(Deposit.dateTime >= start_of_week, Deposit.dateTime <= end_of_week).all()
+
+        if not deposits:
+            return jsonify({'message': 'No deposits found for this week', 'code': 'NO_DEPOSITS_FOUND'}), 404
+
+        deposit_schema = DepositSchema(many=True)
+        deposit_data = deposit_schema.dump(deposits)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
