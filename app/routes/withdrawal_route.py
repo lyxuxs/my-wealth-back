@@ -93,3 +93,31 @@ def search_withdrawal_by_id():
         return jsonify({'message': 'Invalid WithdrawalID format', 'code': 'INVALID_WITHDRAWAL_ID'}), 400
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/withdrawal_by_user_id', methods=['GET'])
+def search_withdrawal_by_user():
+    try:
+
+        user_id = int(request.form.get('userID'))
+
+        withdrawals = Withdrawal.query.filter_by(userID=user_id).all()
+
+        if not withdrawals:
+            return jsonify({'message': 'No withdrawals found for the user', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
+
+        withdrawal_data = []
+        for withdrawal in withdrawals:
+            withdrawal_info = {
+                'WithdrawalID': withdrawal.withdrawalID,
+                'Username': withdrawal.username,
+                'Amount': withdrawal.amount,
+                'DateTime': withdrawal.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Status': withdrawal.status,
+                'UserID': withdrawal.userID
+            }
+            withdrawal_data.append(withdrawal_info)
+
+        return jsonify(withdrawal_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
