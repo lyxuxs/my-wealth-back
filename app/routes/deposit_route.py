@@ -217,3 +217,36 @@ def search_deposit_by_month():
     except Exception as e:
 
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_deposit_custom', methods=['GET'])
+def search_deposit_by_custom_date():
+    try:
+
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+
+        start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+        end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+
+        deposits = Deposit.query.filter(Deposit.dateTime.between(start_datetime, end_datetime)).all()
+
+        if not deposits:
+            return jsonify(
+                {'message': 'No deposits found for the specified date range', 'code': 'NO_DEPOSITS_FOUND'}), 404
+
+        deposit_data = []
+        for deposit in deposits:
+            deposit_info = {
+                'date&Time': deposit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': deposit.amount,
+                'status': deposit.status,
+                'DepositID': deposit.depositID,
+                'UserID': deposit.userID,
+            }
+            deposit_data.append(deposit_info)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
