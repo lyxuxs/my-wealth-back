@@ -34,6 +34,7 @@ def add_withdrawal():
             userID=user_id
         )
         db.session.add(withdrawal)
+        db.session.commit()
 
         transaction = Transaction(
             username=user.name,
@@ -42,11 +43,9 @@ def add_withdrawal():
             status='Pending',
             transactionType='Withdrawal',
             withdrawalID=withdrawal.withdrawalID,
-
             userID=user_id
         )
         db.session.add(transaction)
-
         db.session.commit()
 
         withdrawal_schema = WithdrawalSchema()
@@ -297,5 +296,35 @@ def get_all_withdrawals():
         withdrawals_data = withdrawal_schema.dump(withdrawals)
 
         return jsonify(withdrawals_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/update_withdrawal_status', methods=['PUT'])
+def update_withdrawal_status():
+    try:
+
+        withdrawal_id = int(request.form.get('WithdrawalID'))
+        status = str(request.form.get('status'))
+
+        withdrawal = Withdrawal.query.get(withdrawal_id)
+        if not withdrawal:
+            return jsonify({'message': 'Withdrawal not found', 'code': 'WITHDRAWAL_NOT_FOUND'}), 404
+
+        withdrawal.status = status
+
+        transaction = Transaction.query.filter_by(withdrawalID=withdrawal_id).first()
+        if transaction:
+            transaction.status = status
+
+        if status == 'Approved':
+            user = User.query.get(withdrawal.userID)
+            if not user:
+                return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
+            user.fundingBalance -= withdrawal.amount
+
+        db.session.commit()
+
+        return jsonify({'message': 'Withdrawal status updated successfully', 'code': 'WITHDRAWAL_STATUS_UPDATED'}), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
