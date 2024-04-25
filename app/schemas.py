@@ -42,8 +42,30 @@ class TransferSchema(ma.Schema):
         fields = ('transferID', 'dateTime', 'amount', 'From', 'to', 'userID')
 
 
+class DepositSchema(ma.Schema):
+    class Meta:
+        fields = ('depositID', 'username', 'amount', 'dateTime', 'status', 'userID')
+
+
+class TransactionSchema(ma.Schema):
+    class Meta:
+        fields = (
+            'transactionID', 'username', 'amount', 'dateTime', 'transactionType', 'status', 'withdrawalID', 'depositID',
+            'userID')
+
+
+class WithdrawalSchema(ma.Schema):
+    class Meta:
+        fields = (
+            'withdrawalID', 'username', 'amount', 'dateTime', 'withdrawalNetwork', 'withdrawalWalletAddress', 'status',
+            'userID')
+
+
 user_schema = UserSchema()
 package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
 admin_schema = AdminSchema()
 transfer_schema = TransferSchema()
+deposit_schema = DepositSchema()
+transaction_schema = TransactionSchema()
+withdrawal_schema = WithdrawalSchema()
