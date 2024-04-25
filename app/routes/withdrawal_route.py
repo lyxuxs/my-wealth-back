@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from flask import jsonify, request
 
@@ -134,6 +134,34 @@ def search_withdrawal_by_status():
         if not withdrawals:
             return jsonify(
                 {'message': f'No withdrawals found with status {status}', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
+
+        withdrawal_data = []
+        for withdrawal in withdrawals:
+            withdrawal_info = {
+                'WithdrawalID': withdrawal.withdrawalID,
+                'Username': withdrawal.username,
+                'Amount': withdrawal.amount,
+                'DateTime': withdrawal.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Status': withdrawal.status,
+                'UserID': withdrawal.userID
+            }
+            withdrawal_data.append(withdrawal_info)
+
+        return jsonify(withdrawal_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/withdrawal_by_today', methods=['GET'])
+def search_withdrawal_by_date_today():
+    try:
+
+        today = date.today()
+
+        withdrawals = Withdrawal.query.filter(db.func.date(Withdrawal.dateTime) == today).all()
+
+        if not withdrawals:
+            return jsonify({'message': 'No withdrawals found for today', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
 
         withdrawal_data = []
         for withdrawal in withdrawals:
