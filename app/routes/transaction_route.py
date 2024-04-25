@@ -1,6 +1,8 @@
+from datetime import date
+
 from flask import jsonify, request
 
-from app import app
+from app import app, db
 from app.models.transaction_model import Transaction
 
 
@@ -72,6 +74,37 @@ def search_transaction_by_status():
         if not transactions:
             return jsonify(
                 {'message': 'No transactions found with the given status', 'code': 'NO_TRANSACTIONS_FOUND'}), 404
+
+        transaction_data = []
+        for transaction in transactions:
+            transaction_info = {
+                'TransactionID': transaction.transactionID,
+                'Username': transaction.username,
+                'Amount': transaction.amount,
+                'DateTime': transaction.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'TransactionType': transaction.transactionType,
+                'Status': transaction.status,
+                'UserID': transaction.userID
+            }
+            transaction_data.append(transaction_info)
+
+        return jsonify(transaction_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/transaction_today', methods=['GET'])
+def search_transaction_by_date_today():
+    try:
+
+        today_date = date.today()
+
+        transactions = Transaction.query.filter(
+            db.func.DATE(Transaction.dateTime) == today_date
+        ).all()
+
+        if not transactions:
+            return jsonify({'message': 'No transactions found for today', 'code': 'NO_TRANSACTIONS_FOUND'}), 404
 
         transaction_data = []
         for transaction in transactions:
