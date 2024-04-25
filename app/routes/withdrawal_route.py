@@ -214,3 +214,36 @@ def search_withdrawal_by_date_week():
         return jsonify(withdrawal_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/withdrawal_by_month', methods=['GET'])
+def search_withdrawal_by_month():
+    try:
+
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+
+        withdrawals = Withdrawal.query.filter(
+            db.extract('month', Withdrawal.dateTime) == current_month,
+            db.extract('year', Withdrawal.dateTime) == current_year
+        ).all()
+
+        if not withdrawals:
+            return jsonify(
+                {'message': 'No withdrawals found for the current month', 'code': 'NO_WITHDRAWALS_FOUND'}), 404
+
+        withdrawal_data = []
+        for withdrawal in withdrawals:
+            withdrawal_info = {
+                'WithdrawalID': withdrawal.withdrawalID,
+                'Username': withdrawal.username,
+                'Amount': withdrawal.amount,
+                'DateTime': withdrawal.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Status': withdrawal.status,
+                'UserID': withdrawal.userID
+            }
+            withdrawal_data.append(withdrawal_info)
+
+        return jsonify(withdrawal_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
