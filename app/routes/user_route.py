@@ -26,7 +26,7 @@ def generate_otp():
 
 @app.route('/user_register', methods=['POST'])
 def user_register():
-    referral = request.form.get('myReferral')
+    referral = request.form.get('friendReferral')
 
     friend_user = User.query.filter_by(myReferral=referral).first()
     if friend_user:
