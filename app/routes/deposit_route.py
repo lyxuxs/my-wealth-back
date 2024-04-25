@@ -187,3 +187,33 @@ def search_deposit_week():
     except Exception as e:
 
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+
+@app.route('/search_deposit_month', methods=['GET'])
+def search_deposit_by_month():
+    try:
+
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+
+        deposits = Deposit.query.filter(db.extract('month', Deposit.dateTime) == current_month) \
+            .filter(db.extract('year', Deposit.dateTime) == current_year).all()
+
+        if not deposits:
+            return jsonify({'message': 'No deposits found for the current month', 'code': 'NO_DEPOSITS_FOUND'}), 404
+
+        deposit_data = []
+        for deposit in deposits:
+            deposit_info = {
+                'date&Time': deposit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'Amount': deposit.amount,
+                'status': deposit.status,
+                'DepositID': deposit.depositID,
+                'UserID': deposit.userID,
+            }
+            deposit_data.append(deposit_info)
+
+        return jsonify(deposit_data), 200
+    except Exception as e:
+
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
