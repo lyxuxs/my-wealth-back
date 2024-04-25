@@ -8,4 +8,42 @@ class AdminSchema(ma.Schema):
         fields = ('admin_id', 'user_name', 'email', 'password', 'otp', 'is_verified')
 
 
+class MainAdminSchema(ma.Schema):
+    class Meta:
+        fields = ('email', 'name', 'password', 'adminReferral')
+
+
+class PackageSchema(ma.Schema):
+    class Meta:
+        fields = ('packageID', 'packageName', 'personalMinFund', 'personalMaxFund', 'rebateFee')
+
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = (
+            'userID',
+            'name',
+            'email',
+            'password',
+            'myReferral',
+            'friendReferral',
+            'spotBalance',
+            'fundingBalance',
+            'profit',
+            'RT',
+            'isVerify',
+            'OTP',
+            'packageID'
+        )
+
+
+class TransferSchema(ma.Schema):
+    class Meta:
+        fields = ('transferID', 'dateTime', 'amount', 'From', 'to', 'userID')
+
+
+user_schema = UserSchema()
+package_schema = PackageSchema()
+main_admin_schema = MainAdminSchema()
 admin_schema = AdminSchema()
+transfer_schema = TransferSchema()
