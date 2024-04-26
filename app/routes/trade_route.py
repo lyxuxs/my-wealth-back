@@ -5,7 +5,6 @@ from flask import jsonify, request
 from app import app
 from app import db
 from app.models.trade_model import Trade
-from app.schemas import TradeSchema
 
 
 @app.route('/create_trade', methods=['POST'])
@@ -21,9 +20,15 @@ def create_trade():
         db.session.add(new_trade)
         db.session.commit()
 
-        trade_schema = TradeSchema()
-        trade_data = trade_schema.dump(new_trade)
+        response_data = {
+            'tradeID': new_trade.tradeID,
+            'amount': new_trade.amount,
+            'datetime': new_trade.datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            'trade_on_off': new_trade.trade_on_off,
+            'message': 'Success',
+            'code': 200
+        }
 
-        return jsonify(trade_data), 201
+        return jsonify(response_data), 201
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
