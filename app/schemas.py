@@ -61,6 +61,16 @@ class WithdrawalSchema(ma.Schema):
             'userID')
 
 
+class TradeSchema(ma.Schema):
+    class Meta:
+        fields = ('tradeID', 'amount', 'dateTime', 'tradeOnOff')
+
+
+class ProfitSchema(ma.Schema):
+    class Meta:
+        fields = ('profitID', 'profitAmount', 'dateTime', 'tradeID')
+
+
 user_schema = UserSchema()
 package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
@@ -69,3 +79,5 @@ transfer_schema = TransferSchema()
 deposit_schema = DepositSchema()
 transaction_schema = TransactionSchema()
 withdrawal_schema = WithdrawalSchema()
+trade_schema = TradeSchema()
+profit_schema = ProfitSchema()
