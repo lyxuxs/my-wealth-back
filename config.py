@@ -9,3 +9,5 @@ class Config:
     MAIL_USERNAME = 'noreply.lyxux@gmail.com'
     MAIL_PASSWORD = 'nkkj eyug rctm yhni'
     MAIL_DEFAULT_SENDER = 'noreply.lyxux@gmail.com'
+
+
