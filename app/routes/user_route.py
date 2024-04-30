@@ -124,6 +124,48 @@ def user_register():
         return jsonify({'message': 'Friend referral not found', 'code': 404}), 404
 
 
+@app.route('/search-ref', methods=['GET'])
+def search():
+    user_id = request.args.get('userID')
+
+    third_ref_results = ThirdRef.query.filter_by(userID=user_id).all()
+
+    if not third_ref_results:
+        return jsonify({'message': 'User ID not found in ThirdRef table', 'code': 404}), 404
+
+    main_ref_data = []
+    second_ref_data = []
+    third_ref_data = []
+
+    for third_ref in third_ref_results:
+        main_ref_results = MainRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
+        second_ref_results = SecondRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
+
+        main_ref_data += [{
+            'refTreeID': main_ref.refTreeID,
+            'userID': main_ref.userID,
+            'Ref': main_ref.Ref
+        } for main_ref in main_ref_results]
+
+        second_ref_data += [{
+            'refTreeID': second_ref.refTreeID,
+            'userID': second_ref.userID,
+            'Ref': second_ref.Ref
+        } for second_ref in second_ref_results]
+
+        third_ref_data.append({
+            'refTreeID': third_ref.refTreeID,
+            'userID': third_ref.userID,
+            'Ref': third_ref.Ref
+        })
+
+    response_data = {
+        'MainRef': main_ref_data,
+        'SecondRef': second_ref_data,
+        'ThirdRef': third_ref_data
+    }
+
+    return jsonify(response_data), 200
 
 
 @app.route('/check_my_referral', methods=['GET'])
