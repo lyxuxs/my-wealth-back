@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 from app.models import admin_model, mainAdmin_model, package_model, user_model, transfer_model, withdrawal_model, \
-    transaction_model, deposit_model, trade_model, profit_model
+    transaction_model, deposit_model, trade_model, profit_model, thirdRef_model, secondRef_model, mainRef_model
 from app.routes import admin_route, mainAdmin_route, package_route, user_route, transfer_route, deposit_route, \
     withdrawal_route, transaction_route, profit_route, trade_route
 

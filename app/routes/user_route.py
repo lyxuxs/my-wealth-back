@@ -6,6 +6,9 @@ from flask import request, jsonify
 from flask_mail import Message
 
 from app import app, db
+from app.models.mainRef_model import MainRef
+from app.models.secondRef_model import SecondRef
+from app.models.thirdRef_model import ThirdRef
 from app.models.user_model import User
 from app.routes.admin_route import mail
 
@@ -22,6 +25,38 @@ def generate_referral_code():
 
 def generate_otp():
     return random.randint(1000, 9999)
+
+
+def add_to_third_ref(user_id, my_referral):
+    third_ref = ThirdRef(
+        userID=user_id,
+        Ref=my_referral
+    )
+    db.session.add(third_ref)
+    db.session.commit()
+    return third_ref
+
+
+def add_to_second_ref(user_id, ref_tree_id, friend_referral):
+    second_ref = SecondRef(
+        refTreeID=ref_tree_id,
+        userID=user_id,
+        Ref=friend_referral
+    )
+    db.session.add(second_ref)
+    db.session.commit()
+    return second_ref
+
+
+def add_to_main_ref(user_id, ref_tree_id, friend_referral):
+    main_ref = MainRef(
+        refTreeID=ref_tree_id,
+        userID=user_id,
+        Ref=friend_referral
+    )
+    db.session.add(main_ref)
+    db.session.commit()
+    return main_ref
 
 
 @app.route('/user_register', methods=['POST'])
@@ -57,6 +92,18 @@ def user_register():
         db.session.add(new_user)
         db.session.commit()
 
+        user_id = new_user.userID
+
+        third_ref = add_to_third_ref(user_id, my_referral)
+
+        friend_user_second_ref = SecondRef.query.filter_by(userID=friend_user.userID).first()
+        if friend_user_second_ref:
+            second_ref = add_to_second_ref(user_id, third_ref.refTreeID, friend_user.friendReferral)
+
+            friend_user_main_ref = MainRef.query.filter_by(userID=friend_user.userID).first()
+            if friend_user_main_ref:
+                add_to_main_ref(user_id, second_ref.refTreeID, friend_user.friendReferral)
+
         response_data = {
             'name': new_user.name,
             'email': new_user.email,
@@ -75,6 +122,8 @@ def user_register():
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'Friend referral not found', 'code': 404}), 404
+
+
 
 
 @app.route('/check_my_referral', methods=['GET'])
