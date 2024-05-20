@@ -6,6 +6,9 @@ from flask import request, jsonify
 from flask_mail import Message
 
 from app import app, db
+from app.models.mainRef_model import MainRef
+from app.models.secondRef_model import SecondRef
+from app.models.thirdRef_model import ThirdRef
 from app.models.user_model import User
 from app.routes.admin_route import mail
 
@@ -22,6 +25,38 @@ def generate_referral_code():
 
 def generate_otp():
     return random.randint(1000, 9999)
+
+
+def add_to_third_ref(user_id, my_referral):
+    third_ref = ThirdRef(
+        userID=user_id,
+        Ref=my_referral
+    )
+    db.session.add(third_ref)
+    db.session.commit()
+    return third_ref
+
+
+def add_to_second_ref(user_id, ref_tree_id, friend_referral):
+    second_ref = SecondRef(
+        refTreeID=ref_tree_id,
+        userID=user_id,
+        Ref=friend_referral
+    )
+    db.session.add(second_ref)
+    db.session.commit()
+    return second_ref
+
+
+def add_to_main_ref(user_id, ref_tree_id, friend_referral):
+    main_ref = MainRef(
+        refTreeID=ref_tree_id,
+        userID=user_id,
+        Ref=friend_referral
+    )
+    db.session.add(main_ref)
+    db.session.commit()
+    return main_ref
 
 
 @app.route('/user_register', methods=['POST'])
@@ -57,6 +92,18 @@ def user_register():
         db.session.add(new_user)
         db.session.commit()
 
+        user_id = new_user.userID
+
+        third_ref = add_to_third_ref(user_id, my_referral)
+
+        friend_user_second_ref = SecondRef.query.filter_by(userID=friend_user.userID).first()
+        if friend_user_second_ref:
+            second_ref = add_to_second_ref(user_id, third_ref.refTreeID, friend_user.friendReferral)
+
+            friend_user_main_ref = MainRef.query.filter_by(userID=friend_user.userID).first()
+            if friend_user_main_ref:
+                add_to_main_ref(user_id, second_ref.refTreeID, friend_user.friendReferral)
+
         response_data = {
             'name': new_user.name,
             'email': new_user.email,
@@ -75,6 +122,50 @@ def user_register():
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'Friend referral not found', 'code': 404}), 404
+
+
+@app.route('/search-ref', methods=['GET'])
+def search():
+    user_id = request.args.get('userID')
+
+    third_ref_results = ThirdRef.query.filter_by(userID=user_id).all()
+
+    if not third_ref_results:
+        return jsonify({'message': 'User ID not found in ThirdRef table', 'code': 404}), 404
+
+    main_ref_data = []
+    second_ref_data = []
+    third_ref_data = []
+
+    for third_ref in third_ref_results:
+        main_ref_results = MainRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
+        second_ref_results = SecondRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
+
+        main_ref_data += [{
+            'refTreeID': main_ref.refTreeID,
+            'userID': main_ref.userID,
+            'Ref': main_ref.Ref
+        } for main_ref in main_ref_results]
+
+        second_ref_data += [{
+            'refTreeID': second_ref.refTreeID,
+            'userID': second_ref.userID,
+            'Ref': second_ref.Ref
+        } for second_ref in second_ref_results]
+
+        third_ref_data.append({
+            'refTreeID': third_ref.refTreeID,
+            'userID': third_ref.userID,
+            'Ref': third_ref.Ref
+        })
+
+    response_data = {
+        'MainRef': main_ref_data,
+        'SecondRef': second_ref_data,
+        'ThirdRef': third_ref_data
+    }
+
+    return jsonify(response_data), 200
 
 
 @app.route('/check_my_referral', methods=['GET'])

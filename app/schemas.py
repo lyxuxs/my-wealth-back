@@ -71,6 +71,25 @@ class ProfitSchema(ma.Schema):
         fields = ('profitID', 'profitAmount', 'dateTime', 'tradeID')
 
 
+class MainRefSchema(ma.Schema):
+    class Meta:
+        fields = ('refTreeID', 'userID', 'Ref')
+
+
+class SecondRefSchema(ma.Schema):
+    class Meta:
+        fields = ('refTreeID', 'userID', 'Ref')
+
+
+class ThirdRefSchema(ma.Schema):
+    class Meta:
+        fields = ('refTreeID', 'userID', 'Ref')
+
+
+main_ref_schema = MainRefSchema()
+second_ref_schema = SecondRefSchema()
+third_ref_schema = ThirdRefSchema()
+
 user_schema = UserSchema()
 package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
