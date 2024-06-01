@@ -6,6 +6,7 @@ from flask import request, jsonify
 from flask_mail import Message
 
 from app import app, db
+from app.models.mainAdmin_model import MainAdmin
 from app.models.mainRef_model import MainRef
 from app.models.secondRef_model import SecondRef
 from app.models.thirdRef_model import ThirdRef
@@ -63,8 +64,11 @@ def add_to_main_ref(user_id, ref_tree_id, friend_referral):
 def user_register():
     referral = request.form.get('friendReferral')
 
+    friend_user1 = User.query.filter_by(myReferral=referral).first()
+    friend_user2 = MainAdmin.query.filter_by(adminReferral=referral).first()
+
     friend_user = User.query.filter_by(myReferral=referral).first()
-    if friend_user:
+    if friend_user1 or friend_user2:
         package_id = request.form.get('packageID')
         name = request.form.get('name')
         email = request.form.get('email')
@@ -262,7 +266,7 @@ def user_update(userID):
 
 @app.route('/search_user_by_id', methods=['GET'])
 def search_user_by_id():
-    user_id = request.form.get('userID')
+    user_id = request.args.get('userID')
 
     user = User.query.filter_by(userID=user_id).first()
     if user:
@@ -410,7 +414,7 @@ def send_otp():
     return jsonify(response_data), 200
 
 
-@app.route('/check_user_OTP', methods=['GET'])
+@app.route('/check_user_OTP', methods=['POST'])
 def check_user_otp():
     user_id = request.form.get('userID')
     otp_entered = request.form.get('OTP')
