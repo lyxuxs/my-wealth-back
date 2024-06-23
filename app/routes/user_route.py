@@ -63,9 +63,9 @@ def add_to_main_ref(user_id, ref_tree_id, friend_referral):
 @app.route('/user_register', methods=['POST'])
 def user_register():
     referral = request.form.get('friendReferral')
-
     friend_user1 = User.query.filter_by(myReferral=referral).first()
     friend_user2 = MainAdmin.query.filter_by(adminReferral=referral).first()
+   
 
     friend_user = User.query.filter_by(myReferral=referral).first()
     if friend_user1 or friend_user2:
@@ -92,22 +92,31 @@ def user_register():
             isVerify=False,
             OTP=encrypted_otp
         )
-
         db.session.add(new_user)
         db.session.commit()
-
+        
+        new_user = User.query.filter_by(email=email).first()
+       
         user_id = new_user.userID
 
-        third_ref = add_to_third_ref(user_id, my_referral)
+        if friend_user1:
+            third_ref = add_to_third_ref(user_id, my_referral)
+            friend_user_second_ref = User.query.filter_by(myReferral=referral).first()
+            second_ref = add_to_second_ref(friend_user_second_ref.userID, third_ref.refTreeID, referral)
+            
+            friend_user_main_ref1 = User.query.filter_by(myReferral=friend_user_second_ref.friendReferral).first()
+            friend_user_main_ref2 = MainAdmin.query.filter_by(adminReferral=friend_user_second_ref.friendReferral).first()
+   
+            if friend_user_main_ref1:
+                add_to_main_ref(friend_user_main_ref1.userID, second_ref.refTreeID, friend_user_main_ref1.myReferral)
+            if friend_user_main_ref2:
+                add_to_main_ref("mainAdmin", second_ref.refTreeID, friend_user_main_ref2.adminReferral)
+        
+        else:
+            third_ref = add_to_third_ref(user_id, my_referral)
+            second_ref = add_to_second_ref("mainAdmin", third_ref.refTreeID, referral)
 
-        friend_user_second_ref = SecondRef.query.filter_by(userID=friend_user.userID).first()
-        if friend_user_second_ref:
-            second_ref = add_to_second_ref(user_id, third_ref.refTreeID, friend_user.friendReferral)
-
-            friend_user_main_ref = MainRef.query.filter_by(userID=friend_user.userID).first()
-            if friend_user_main_ref:
-                add_to_main_ref(user_id, second_ref.refTreeID, friend_user.friendReferral)
-
+        
         response_data = {
             'name': new_user.name,
             'email': new_user.email,
@@ -122,7 +131,7 @@ def user_register():
             'message': 'Success',
             'code': 200
         }
-
+        
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'Friend referral not found', 'code': 404}), 404
