@@ -41,6 +41,9 @@ class TransferSchema(ma.Schema):
     class Meta:
         fields = ('transferID', 'dateTime', 'amount', 'From', 'to', 'userID')
 
+class TransferOutSchema(ma.Schema):
+    class Meta:
+        fields = ('transferOutID', 'dateTime', 'amount', 'userID')
 
 class DepositSchema(ma.Schema):
     class Meta:
@@ -95,6 +98,7 @@ package_schema = PackageSchema()
 main_admin_schema = MainAdminSchema()
 admin_schema = AdminSchema()
 transfer_schema = TransferSchema()
+transferOut_schema = TransferOutSchema()
 deposit_schema = DepositSchema()
 transaction_schema = TransactionSchema()
 withdrawal_schema = WithdrawalSchema()
