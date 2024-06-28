@@ -3,5 +3,7 @@ from app import db
 
 class SecondRef(db.Model):
     refTreeID = db.Column(db.Integer, primary_key=True)
-    userID = db.Column(db.String(255))
     Ref = db.Column(db.String(255))
+    userID = db.Column(db.Integer, db.ForeignKey('user.userID'), nullable=False)
+    user = db.relationship('User', backref=db.backref('secondRefs', lazy=True))
+

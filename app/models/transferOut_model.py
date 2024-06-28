@@ -9,4 +9,4 @@ class TransferOut(db.Model):
     amount = db.Column(db.Float, nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey('user.userID'), nullable=False)
 
-    user = db.relationship('User', backref=db.backref('transfers', lazy=True))
+    user = db.relationship('User', backref=db.backref('transferOuts', lazy=True))
