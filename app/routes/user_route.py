@@ -7,9 +7,9 @@ from flask_mail import Message
 
 from app import app, db
 from app.models.mainAdmin_model import MainAdmin
-from app.models.mainRef_model import MainRef
-from app.models.secondRef_model import SecondRef
-from app.models.thirdRef_model import ThirdRef
+from app.models.levelA_model import LevelA
+from app.models.levelB_model import LevelB
+from app.models.levelC_model import LevelC
 from app.models.user_model import User
 from app.routes.admin_route import mail
 
@@ -28,47 +28,48 @@ def generate_otp():
     return random.randint(1000, 9999)
 
 
-def add_to_third_ref(user_id, my_referral):
-    third_ref = ThirdRef(
+def add_to_level_c(user_id, friend_user_id,isAdmin):
+    level_c = LevelC(
         userID=user_id,
-        Ref=my_referral
+        friendUserID=friend_user_id,
+        isFriendAdmin=isAdmin
     )
-    db.session.add(third_ref)
+    db.session.add(level_c)
     db.session.commit()
-    return third_ref
+    return level_c
 
 
-def add_to_second_ref(user_id, ref_tree_id, friend_referral):
-    second_ref = SecondRef(
+def add_to_level_b(user_id, ref_tree_id, friend_user_id,isAdmin):
+    level_b = LevelB(
         refTreeID=ref_tree_id,
         userID=user_id,
-        Ref=friend_referral
+        friendUserID=friend_user_id,
+        isFriendAdmin=isAdmin
     )
-    db.session.add(second_ref)
+    db.session.add(level_b)
     db.session.commit()
-    return second_ref
+    return level_b
 
 
-def add_to_main_ref(user_id, ref_tree_id, friend_referral):
-    main_ref = MainRef(
+def add_to_level_a(user_id, ref_tree_id, friend_user_id,isAdmin):
+    level_a = LevelA(
         refTreeID=ref_tree_id,
         userID=user_id,
-        Ref=friend_referral
+        friendUserID=friend_user_id,
+        isFriendAdmin=isAdmin
     )
-    db.session.add(main_ref)
+    db.session.add(level_a)
     db.session.commit()
-    return main_ref
+    return level_a
 
 
 @app.route('/user_register', methods=['POST'])
 def user_register():
     referral = request.form.get('friendReferral')
-    friend_user1 = User.query.filter_by(myReferral=referral).first()
-    friend_user2 = MainAdmin.query.filter_by(adminReferral=referral).first()
-   
-
     friend_user = User.query.filter_by(myReferral=referral).first()
-    if friend_user1 or friend_user2:
+    friend_admin = MainAdmin.query.filter_by(adminReferral=referral).first()
+   
+    if friend_user or friend_admin:
         package_id = request.form.get('packageID')
         name = request.form.get('name')
         email = request.form.get('email')
@@ -99,24 +100,28 @@ def user_register():
        
         user_id = new_user.userID
 
-        if friend_user1:
-            third_ref = add_to_third_ref(user_id, my_referral)
-            friend_user_second_ref = User.query.filter_by(myReferral=referral).first()
-            second_ref = add_to_second_ref(friend_user_second_ref.userID, third_ref.refTreeID, referral)
+        if friend_user:
+            level_c = add_to_level_c(user_id, friend_user.userID,False)
             
-            friend_user_main_ref1 = User.query.filter_by(myReferral=friend_user_second_ref.friendReferral).first()
-            friend_user_main_ref2 = MainAdmin.query.filter_by(adminReferral=friend_user_second_ref.friendReferral).first()
-   
-            if friend_user_main_ref1:
-                add_to_main_ref(friend_user_main_ref1.userID, second_ref.refTreeID, friend_user_main_ref1.myReferral)
-            if friend_user_main_ref2:
-                add_to_main_ref("mainAdmin", second_ref.refTreeID, friend_user_main_ref2.adminReferral)
+            levelB_friendUser = User.query.filter_by(myReferral=friend_user.friendReferral).first()
+            levelB_friendAdmin = MainAdmin.query.filter_by(adminReferral=friend_user.friendReferral).first()
+            
+            if levelB_friendUser:
+                add_to_level_b(friend_user.userID, level_c.refTreeID, levelB_friendUser.userID,False)
+                
+                levelA_friendUser = User.query.filter_by(myReferral=levelB_friendUser.friendReferral).first()
+                levelA_friendAdmin = MainAdmin.query.filter_by(adminReferral=levelB_friendUser.friendReferral).first()
+                if levelA_friendUser:
+                    add_to_level_a(levelB_friendUser.userID, level_c.refTreeID, levelA_friendUser.userID,False)
+                elif levelA_friendAdmin:
+                    add_to_level_a(levelB_friendUser.userID, level_c.refTreeID, None,True)
+            
+            elif levelB_friendAdmin:
+                add_to_level_b(friend_user.userID, level_c.refTreeID, None,True)
         
-        else:
-            third_ref = add_to_third_ref(user_id, my_referral)
-            second_ref = add_to_second_ref("mainAdmin", third_ref.refTreeID, referral)
-
-        
+        elif friend_admin:
+            level_c = add_to_level_c(user_id, None,True)
+                 
         response_data = {
             'name': new_user.name,
             'email': new_user.email,
@@ -141,41 +146,44 @@ def user_register():
 def search():
     user_id = request.args.get('userID')
 
-    third_ref_results = ThirdRef.query.filter_by(userID=user_id).all()
+    level_c_results = LevelC.query.filter_by(userID=user_id).all()
 
-    if not third_ref_results:
-        return jsonify({'message': 'User ID not found in ThirdRef table', 'code': 404}), 404
+    if not level_c_results:
+        return jsonify({'message': 'User ID not found in LevelC table', 'code': 404}), 404
 
-    main_ref_data = []
-    second_ref_data = []
-    third_ref_data = []
+    level_a_data = []
+    level_b_data = []
+    level_c_data = []
 
-    for third_ref in third_ref_results:
-        main_ref_results = MainRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
-        second_ref_results = SecondRef.query.filter_by(refTreeID=third_ref.refTreeID).all()
+    for level_c in level_c_results:
+        level_a_results = LevelA.query.filter_by(refTreeID=level_c.refTreeID).all()
+        level_b_results = LevelB.query.filter_by(refTreeID=level_c.refTreeID).all()
 
-        main_ref_data += [{
-            'refTreeID': main_ref.refTreeID,
-            'userID': main_ref.userID,
-            'Ref': main_ref.Ref
-        } for main_ref in main_ref_results]
+        level_a_data += [{
+            'refTreeID':LevelA.refTreeID,
+            'userID':LevelA.userID,
+            'friendUserID':LevelA.friendUserID ,
+            'isFriendAdmin':LevelA.isFriendAdmin
+        } for level_a in level_a_results]
 
-        second_ref_data += [{
-            'refTreeID': second_ref.refTreeID,
-            'userID': second_ref.userID,
-            'Ref': second_ref.Ref
-        } for second_ref in second_ref_results]
+        level_b_data += [{
+            'refTreeID':LevelB.refTreeID,
+            'userID':LevelB.userID,
+            'friendUserID':LevelB.friendUserID ,
+            'isFriendAdmin':LevelB.isFriendAdmin
+        } for level_b in level_b_results]
 
-        third_ref_data.append({
-            'refTreeID': third_ref.refTreeID,
-            'userID': third_ref.userID,
-            'Ref': third_ref.Ref
+        level_c_data.append({
+            'refTreeID':LevelC.refTreeID,
+            'userID':LevelC.userID,
+            'friendUserID':LevelC.friendUserID ,
+            'isFriendAdmin':LevelC.isFriendAdmin
         })
 
     response_data = {
-        'MainRef': main_ref_data,
-        'SecondRef': second_ref_data,
-        'ThirdRef': third_ref_data
+        'LevelA': level_a_data,
+        'LevelB': level_b_data,
+        'LevelC': level_c_data
     }
 
     return jsonify(response_data), 200

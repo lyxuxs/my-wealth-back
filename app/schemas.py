@@ -74,24 +74,24 @@ class ProfitSchema(ma.Schema):
         fields = ('profitID', 'profitAmount', 'dateTime', 'tradeID')
 
 
-class MainRefSchema(ma.Schema):
+class LevelASchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'Ref')
+        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
 
 
-class SecondRefSchema(ma.Schema):
+class LevelBSchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'Ref')
+        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
 
 
-class ThirdRefSchema(ma.Schema):
+class LevelCSchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'Ref')
+        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
 
 
-main_ref_schema = MainRefSchema()
-second_ref_schema = SecondRefSchema()
-third_ref_schema = ThirdRefSchema()
+level_a_schema = LevelASchema()
+level_b_schema = LevelBSchema()
+level_c_schema = LevelCSchema()
 
 user_schema = UserSchema()
 package_schema = PackageSchema()
