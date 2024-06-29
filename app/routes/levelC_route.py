@@ -51,3 +51,29 @@ def userLevelC():
     
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+    
+    
+@app.route('/friendLevelC', methods=['GET'])
+def friendLevelC():
+    try:
+        friendUser_id = request.args.get('friendUserID')
+        user = User.query.get(friendUser_id)
+        
+        if not user:
+            return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
+       
+        levelCs = LevelC.query.filter_by(friendUserID=friendUser_id).all()
+        levelCList = []
+        for levelC in levelCs:
+            levelC_data = {
+                'refTreeID':levelC.refTreeID,
+                'userID':levelC.userID,
+                'friendUserID':levelC.friendUserID ,
+                'isFriendAdmin':levelC.isFriendAdmin 
+            }
+            levelCList.append(levelC_data)
+
+        return jsonify(levelCList)
+    
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500

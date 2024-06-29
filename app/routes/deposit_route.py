@@ -13,7 +13,7 @@ from app.schemas import DepositSchema
 @app.route('/add_deposit', methods=['POST'])
 def add_deposit():
     try:
-
+        
         amount = float(request.form.get('Amount'))
         user_id = int(request.form.get('UserID'))
 
