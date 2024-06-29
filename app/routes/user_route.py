@@ -247,6 +247,8 @@ def user_update(userID):
     if 'password' in data:
         hashed_password = hashlib.sha256(data['password'].encode()).hexdigest()
         user.password = hashed_password
+    if 'packageID' in data:
+        user.packageID = data['packageID']
     if 'spotBalance' in data:
         user.spotBalance = float(data['spotBalance'])
     if 'fundingBalance' in data:
@@ -290,6 +292,7 @@ def search_user_by_id():
         response_data = {
             'name': user.name,
             'email': user.email,
+            'packageID':user.packageID,
             'myReferral': user.myReferral,
             'friendReferral': user.friendReferral,
             'spotBalance': user.spotBalance,
