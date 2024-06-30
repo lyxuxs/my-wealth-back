@@ -44,7 +44,7 @@ def create_transferout():
 
 @app.route('/transferOut_search', methods=['GET'])
 def search_transferOut_by_user_id():
-    user_id = request.form.get('userID')
+    user_id = request.args.get('userID')
 
     if user_id is None:
         return jsonify({'message': 'User ID is required', 'code': 'USER_ID_REQUIRED'}), 400
