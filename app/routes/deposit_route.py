@@ -1,68 +1,120 @@
 from datetime import datetime, date, timedelta
-
-from flask import jsonify, request
-
-from app import app
-from app import db
+from flask import Flask, jsonify, request
+from app import app, db
 from app.models.deposit_model import Deposit
 from app.models.transaction_model import Transaction
 from app.models.user_model import User
 from app.schemas import DepositSchema
-
-# from configparser import SafeConfigParser
-# from pyCoinPayments import CryptoPayments
-
-# @app.route('/testWallet', methods=['POST'])
-# def testWallet():
-#     # Loading configuration file using configparser with API Keys for CoinPayments.net
-#     parser = SafeConfigParser()
-#     parser.read('config.ini')
-#     API_KEY = parser.get('27a1a686f619457d14844017aba64d454ad15cf64eef40c82a37e7efa3985729', 'API_KEY')
-#     API_SECRET = parser.get('94E035c6F4ba4361C2deAa425b704Dd39f7c3aBa7275d8aF10eD6f96668e03b3', 'API_SECRET')
-#     IPN_URL = parser.get('apikeys', 'IPN_URL')
+from configparser import ConfigParser
+import requests
+import hmac
+import hashlib
 
 
-#     ## Parameters for your call, these are defined in the CoinPayments API Docs
-#     ## https://www.coinpayments.net/apidoc
+from configparser import ConfigParser
+config = ConfigParser()
+config.read('config.ini')
+@app.route('/ipn_handler', methods=['POST'])
+def ipn_handler():
+    try:
+        # CoinPayments requires the IPN to be verified by using HMAC SHA512
+        hmac_header = request.headers.get('HMAC')
+        if not hmac_header:
+            return jsonify({'error': 'Missing HMAC header'}), 400
 
-#     create_transaction_params = {
-#         'amount' : 10,
-#         'currency1' : 'USD',
-#         'currency2' : 'BTC'
-#     }
+        request_data = request.form.to_dict()
+        api_secret = 'your_api_secret'  # Use the same API secret as in your CoinPayments account
 
-#     #Client instance
-#     client = CryptoPayments(API_KEY, API_SECRET, IPN_URL)
+        # Create HMAC signature
+        encoded_data = request.data
+        hmac_calculated = hmac.new(api_secret.encode(), encoded_data, hashlib.sha512).hexdigest()
 
-#     #make the call to createTransaction crypto payments API
-#     transaction = client.createTransaction(create_transaction_params)
+        # Verify HMAC signature
+        if hmac_header != hmac_calculated:
+            return jsonify({'error': 'Invalid HMAC signature'}), 400
+
+        # Process the IPN data
+        txn_id = request_data.get('txn_id')
+        status = int(request_data.get('status'))
+        amount = float(request_data.get('amount1'))
+        currency = request_data.get('currency1')
+
+        # Update your database based on the transaction status
+        if status >= 100 or status == 2:  # Payment is complete or queued for nightly payout
+            # Payment is complete
+            # Update your database to mark the transaction as completed
+            pass
+        elif status < 0:
+            # Payment is canceled or has failed
+            # Update your database to mark the transaction as failed/canceled
+            pass
+        else:
+            # Payment is pending
+            # Update your database to mark the transaction as pending
+            pass
+
+        return jsonify({'message': 'IPN received successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def coinpayments_api_call(cmd, params, api_key, api_secret):
+    params['cmd'] = cmd
+    params['key'] = api_key
+    params['format'] = 'json'
+
+    post_url = 'https://www.coinpayments.net/api.php'
+    post_data = '&'.join([f"{key}={value}" for key, value in params.items()])
+
+    hmac_sign = hmac.new(api_secret.encode(), post_data.encode(), hashlib.sha512).hexdigest()
+    headers = {'hmac': hmac_sign}
+
+    response = requests.post(post_url, data=params, headers=headers)
+    return response.json()
 
 
-#     if transaction['error'] == 'ok':  #check error status 'ok' means the API returned with desired result
-#         print (transaction['amount']) #print some values from the result
-#         print (transaction['address'])
-#     else:
-#         print (transaction['error'])
+@app.route('/testWallet', methods=['POST'])
+def testWallet():
+    parser = ConfigParser()
+    parser.read('config.ini')
+    API_KEY = parser.get('apikeys', 'API_KEY')
+    API_SECRET = parser.get('apikeys', 'API_SECRET')
+    IPN_URL = parser.get('apikeys', 'IPN_URL')
 
+    create_transaction_params = {
+        'amount': 10,
+        'currency1': 'USD',
+        'currency2': 'BTC',
+        'ipn_url': IPN_URL
+    }
 
-#     #Use previous tx Id returned from the previous createTransaction method to test the getTransactionInfo call
-#     post_params1 = {
-#         'txid' : transaction['txn_id'],    
-#     }
+    transaction = coinpayments_api_call('create_transaction', create_transaction_params, API_KEY, API_SECRET)
 
+    if transaction['error'] == 'ok':
+        print(transaction['result']['amount'])
+        print(transaction['result']['address'])
+        txn_id = transaction['result']['txn_id']
+    else:
+        print(transaction['error'])
+        return jsonify({'message': transaction['error']}), 500
 
-#     transactionInfo = client.getTransactionInfo(post_params1) #call coinpayments API using instance
+    post_params1 = {
+        'txid': txn_id
+    }
 
-#     if transactionInfo['error'] == 'ok': #check error status 'ok' means the API returned with desired result
-#         print (transactionInfo['amountf']) 
-#         print (transactionInfo['payment_address'])
-#     else:
-#         print (transactionInfo['error'])
+    transaction_info = coinpayments_api_call('get_tx_info', post_params1, API_KEY, API_SECRET)
+
+    if transaction_info['error'] == 'ok':
+        print(transaction_info['result']['amountf'])
+        print(transaction_info['result']['payment_address'])
+    else:
+        print(transaction_info['error'])
+
+    return jsonify({'message': 'Transaction tested successfully'}), 200
+
 
 @app.route('/add_deposit', methods=['POST'])
 def add_deposit():
     try:
-        
         amount = float(request.form.get('Amount'))
         user_id = int(request.form.get('UserID'))
 
@@ -114,7 +166,7 @@ def add_deposit():
 @app.route('/search_deposit', methods=['GET'])
 def search_deposit_by_id():
     try:
-        deposit_id = int(request.form.get('depositID'))
+        deposit_id = int(request.args.get('depositID'))
 
         deposit = Deposit.query.get(deposit_id)
 
@@ -143,8 +195,7 @@ def search_deposit_by_id():
 @app.route('/deposit_by_user_id', methods=['GET'])
 def search_deposits_by_user_id():
     try:
-
-        user_id = int(request.form.get('UserID'))
+        user_id = int(request.args.get('UserID'))
 
         deposits = Deposit.query.filter_by(userID=user_id).all()
 
@@ -165,15 +216,13 @@ def search_deposits_by_user_id():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/search_deposit_by_status', methods=['GET'])
 def search_deposits_by_status():
     try:
-
-        status = str(request.form.get('status'))
+        status = str(request.args.get('status'))
 
         deposits = Deposit.query.filter_by(status=status).all()
 
@@ -194,14 +243,12 @@ def search_deposits_by_status():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/search_deposit_today', methods=['GET'])
 def search_deposit_today():
     try:
-
         today = date.today()
 
         deposits = Deposit.query.filter(db.func.date(Deposit.dateTime) == today).all()
@@ -214,14 +261,12 @@ def search_deposit_today():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/search_deposit_week', methods=['GET'])
 def search_deposit_week():
     try:
-
         today = datetime.today()
         start_of_week = today - timedelta(days=today.weekday())
         end_of_week = start_of_week + timedelta(days=6)
@@ -236,14 +281,12 @@ def search_deposit_week():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/search_deposit_month', methods=['GET'])
 def search_deposit_by_month():
     try:
-
         current_month = datetime.now().month
         current_year = datetime.now().year
 
@@ -267,16 +310,14 @@ def search_deposit_by_month():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/search_deposit_custom', methods=['GET'])
 def search_deposit_by_custom_date():
     try:
-
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
 
         start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
         end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
@@ -301,14 +342,12 @@ def search_deposit_by_custom_date():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/get_all_deposits', methods=['GET'])
 def get_all_deposits():
     try:
-
         deposits = Deposit.query.all()
 
         deposit_data = []
@@ -325,14 +364,12 @@ def get_all_deposits():
 
         return jsonify(deposit_data), 200
     except Exception as e:
-
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 
 @app.route('/update_deposit_status', methods=['PUT'])
 def update_deposit_status():
     try:
-
         deposit_id = int(request.form.get('DepositID'))
         status = str(request.form.get('status'))
 
