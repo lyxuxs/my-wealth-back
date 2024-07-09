@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from urllib.parse import urlencode
 from flask import Flask, jsonify, request
 from app import app, db
 from app.models.deposit_model import Deposit
@@ -9,11 +10,90 @@ from configparser import ConfigParser
 import requests
 import hmac
 import hashlib
+import time
 
 
 from configparser import ConfigParser
 config = ConfigParser()
 config.read('config.ini')
+
+
+IPN_SECRET = '3o9QU1sHSLRvlXEVDyCmw2NaylOyfFoN'
+
+def get_callback_address():
+    url = 'https://www.coinpayments.net/api.php'
+    
+    # Current UNIX timestamp
+    nonce = str(int(time.time() * 1000))
+    
+    # Required parameters for the request
+    params = {
+        'version': '1',
+        'cmd': 'get_callback_address',
+        'key': API_KEY,
+        'currency': "USD",
+        'nonce': nonce
+    }
+    
+    # Sort parameters and create the query string
+    post_data = '&'.join([f'{k}={params[k]}' for k in sorted(params)])
+    
+    # Create the HMAC signature
+    signature = hmac.new(
+        IPN_SECRET.encode('utf-8'),
+        post_data.encode('utf-8'),
+        hashlib.sha512
+    ).hexdigest()
+    
+    # Headers for the request
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'HMAC': signature
+    }
+    
+    # Make the request
+    response = requests.post(url, data=post_data, headers=headers)
+    
+    # Print the response
+    return response.json()
+
+@app.route('/ipn', methods=['POST'])
+def ipn():
+    try:
+        # Verify HMAC signature
+        hmac_header = request.headers.get('HMAC')
+        if not hmac_header:
+            return jsonify({'status': 'error', 'message': 'No HMAC header'}), 400
+
+        # Recreate the HMAC signature
+        request_string = request.form.to_dict()
+        encoded_data = urlencode(request_string)
+        hmac_calculated = hmac.new(IPN_SECRET.encode('utf-8'), encoded_data.encode('utf-8'), hashlib.sha512).hexdigest()
+        
+        if hmac_header != hmac_calculated:
+            print(f'Expected HMAC: {hmac_calculated}')
+            print(f'Received HMAC: {hmac_header}')
+            return jsonify({'status': 'error', 'message': 'Invalid HMAC signature'}), 400
+
+        # Process IPN data
+        print(f"Received IPN: {request_string}")
+
+        # Perform your business logic here
+        if request_string.get('status') == '100':
+            # Payment confirmed
+            print("Payment confirmed")
+            # Perform your logic for a confirmed payment
+        else:
+            # Payment not confirmed
+            print("Payment not confirmed")
+            # Perform your logic for a non-confirmed payment
+
+        return jsonify({'status': 'success'}), 200
+
+    except Exception as e:
+        print(f"Error processing IPN: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/ipn_handler', methods=['POST'])
 def ipn_handler():
     try:
@@ -23,7 +103,7 @@ def ipn_handler():
             return jsonify({'error': 'Missing HMAC header'}), 400
 
         request_data = request.form.to_dict()
-        api_secret = 'your_api_secret'  # Use the same API secret as in your CoinPayments account
+        api_secret = IPN_SECRET  # Use the same API secret as in your CoinPayments account
 
         # Create HMAC signature
         encoded_data = request.data
