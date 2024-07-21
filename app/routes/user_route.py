@@ -256,7 +256,11 @@ def user_update(userID):
     if 'profit' in data:
         user.profit = float(data['profit'])
     if 'RT' in data:
-        user.RT = data['RT'] == 'true'
+        if data['RT'].lower() == 'true':
+            user.RT = True
+        elif data['RT'].lower() == 'false':
+            user.RT = False
+        # user.RT = data['RT'] == 'true'
     if 'isVerify' in data:
         user.isVerify = data['isVerify'] == 'true'
     if 'OTP' in data:
