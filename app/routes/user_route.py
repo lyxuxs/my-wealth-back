@@ -10,6 +10,7 @@ from app.models.mainAdmin_model import MainAdmin
 from app.models.levelA_model import LevelA
 from app.models.levelB_model import LevelB
 from app.models.levelC_model import LevelC
+from app.models.package_model import Package
 from app.models.user_model import User
 from app.routes.admin_route import mail
 
@@ -474,3 +475,31 @@ def check_user_otp():
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'Invalid OTP', 'code': 401}), 401
+
+@app.route('/rt_users_trade_balance', methods=['GET'])
+def get_all_rt_users_trade_balance():
+    rt_users = User.query.filter_by(RT=True).all()
+    user_list = []
+    total_trade_balance=0
+    for user in rt_users:
+        package = Package.query.get(user.packageID)
+        total_trade_balance += package.personalMinFund
+        
+        user_data = {
+            'name': user.name,
+            'email': user.email,
+            'spotBalance': user.spotBalance,
+            'fundingBalance': user.fundingBalance,
+            'userID': user.userID,
+            'packageID':user.packageID,
+            'packageMinFund':package.personalMinFund,
+            'packageName':package.packageName
+        }
+        user_list.append(user_data)
+    
+    response_data = {
+        'total_trade_balance': total_trade_balance,
+        'trade_users': user_list
+    }
+
+    return jsonify(response_data)
