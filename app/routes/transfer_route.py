@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask import request, jsonify
 
 from app import app, db
+from app.models.package_model import Package
 from app.models.transfer_model import Transfer
 from app.models.user_model import User
 from app.schemas import transfer_schema
@@ -34,9 +35,20 @@ def create_transfer():
     if getattr(user, balance_type) < amount:
         return jsonify({'message': 'Insufficient balance', 'code': 'INSUFFICIENT_BALANCE'}), 400
 
+    
+    
+    if(from_account=='spotBalance'):
+        package = Package.query.filter(Package.personalMinFund <= getattr(user, 'spotBalance')- amount,
+                                   Package.personalMaxFund >= getattr(user, 'spotBalance')- amount).first()
+        setattr(user, "packageID", package.packageID)
+    else:
+        package = Package.query.filter(Package.personalMinFund <= getattr(user, 'spotBalance')+ amount,
+                                   Package.personalMaxFund >= getattr(user, 'spotBalance')+ amount).first()
+        setattr(user, "packageID", package.packageID)
+    
     setattr(user, balance_type, getattr(user, balance_type) - amount)
     setattr(user, to_account, getattr(user, to_account) + amount)
-
+        
     transfer = Transfer(
         dateTime=datetime.utcnow(),
         amount=amount,
