@@ -1,5 +1,6 @@
 from flask import jsonify, request
 
+
 from app import app
 from app import db
 from app.models.trade_model import Trade
@@ -9,9 +10,10 @@ from app.models.trade_model import Trade
 def create_trade():
     try:
         amount = float(request.form.get('Amount'))
-        trade_on_off = bool(request.form.get('trade'))
+        
 
-        new_trade = Trade(amount=amount, trade_on_off=trade_on_off)
+        new_trade = Trade(amount=amount)
+        new_trade.trade_on_off=True
         db.session.add(new_trade)
         db.session.commit()
 
@@ -52,3 +54,20 @@ def update_trade_on_off():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+@app.route('/getAll_trade', methods=['GET'])
+def getAll_trade():
+    trades = Trade.query.all()
+
+    response_data = []
+    for trade in trades:
+        trade_data = {
+            'tradeID': trade.tradeID,
+            'amount': trade.amount,
+            'datetime': trade.datetime,
+            'trade_on_off': trade.trade_on_off
+        }
+        response_data.append(trade_data)
+
+    return jsonify(response_data)
+    
