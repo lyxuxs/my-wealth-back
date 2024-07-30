@@ -1,10 +1,12 @@
 from datetime import datetime
 
-from flask import request, jsonify
+from flask import json, request, jsonify
 
 from app import app, db
+from app.models.package_model import Package
 from app.models.profit_model import Profit
 from app.models.trade_model import Trade
+from app.models.userProfit_model import UserProfit
 from app.models.user_model import User
 
 
@@ -19,25 +21,54 @@ def add_profit():
         trade = Trade.query.get(trade_id)
         if not trade:
             return jsonify({'message': 'Trade not found', 'code': 'TRADE_NOT_FOUND'}), 404
-
+        
         new_profit = Profit(
             tradeID=trade_id,
             shareAmount=share_amount,
             profitType=profit_type,
             shareType=share_type,
             dateTime=datetime.utcnow())
-
         db.session.add(new_profit)
-        db.session.commit()
-        
-        trade.trade_on_off = False
         db.session.commit()
         
         rt_users = User.query.filter_by(RT=True).all()
         for user in rt_users:
             user.RT=False
-            db.session.commit()
-
+            if(share_type=='Default'):
+                userPackage=Package.query.get(user.packageID)
+                userProfitAmount=userPackage.personalMaxFund*userPackage.rebateFee/100/30
+                newUserProfit = UserProfit(
+                    profitAmount=userProfitAmount,
+                    profitID=new_profit.profitID,
+                    profitType=profit_type,
+                    userID=user.userID,
+                    dateTime=datetime.utcnow())
+                user.profit=userProfitAmount
+                user.spotBalance += userProfitAmount
+                trade.trade_on_off = False
+                db.session.add(newUserProfit)
+                db.session.commit()
+            
+            else:
+                data = json.loads(share_amount)
+                for packageShareAmount in data:
+                    if str(user.packageID) == str(packageShareAmount['packageID']):
+                        newUserProfit = UserProfit(
+                            profitAmount=float(packageShareAmount['amount']),
+                            profitID=new_profit.profitID,
+                            profitType=profit_type,
+                            userID=user.userID,
+                            dateTime=datetime.utcnow())
+                        user.profit=float(packageShareAmount['amount'])
+                        if profit_type == 'Profit':
+                            user.spotBalance += float(packageShareAmount['amount'])
+                        else:
+                            user.spotBalance -= float(packageShareAmount['amount'])
+                        trade.trade_on_off = False
+                        db.session.add(newUserProfit)
+                        db.session.commit()
+            
+        
         response_data = {
             'ProfitID': new_profit.profitID,
             'TradeID': new_profit.tradeID,

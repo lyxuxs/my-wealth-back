@@ -72,6 +72,11 @@ class TradeSchema(ma.Schema):
 class ProfitSchema(ma.Schema):
     class Meta:
         fields = ('profitID', 'profitAmount', 'dateTime', 'tradeID')
+        
+
+class UserProfitSchema(ma.Schema):
+    class Meta:
+        fields = ('userProfitID','profitType','profitAmount','dateTime','profitID','userID')
 
 
 class LevelASchema(ma.Schema):
@@ -104,3 +109,4 @@ transaction_schema = TransactionSchema()
 withdrawal_schema = WithdrawalSchema()
 trade_schema = TradeSchema()
 profit_schema = ProfitSchema()
+user_profit_schema = UserProfitSchema()
