@@ -47,7 +47,8 @@ def create_transaction():
         'currency1': data['currency1'],
         'currency2': data['currency2'],
         'buyer_email': data['buyer_email'],
-        'ipn_url': 'http://127.0.0.1:5000/ipn',  # Set your public IPN URL
+        'UserID': data['UserID'],
+        'ipn_url': 'https://5.189.141.126:443/ipn',  # Set your public IPN URL
         'format': 'json'
     }
     headers = create_headers(payload)
@@ -83,7 +84,59 @@ def ipn():
     # Process the IPN data
     print(ipn_data)  # Replace with your logic to handle the IPN data
 
-    return "IPN received", 200
+    # return "IPN received", 200
+    # //////////////////////////////////////////////////////////
+    try:
+        amount = float(ipn_data['Amount'])
+        user_id = int(ipn_data['UserID'])
+
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
+
+        deposit = Deposit(
+            username=user.name,
+            amount=amount,
+            dateTime=datetime.utcnow(),
+            status='Pending',
+            userID=user_id
+        )
+        db.session.add(deposit)
+        db.session.commit()
+
+        transaction = Transaction(
+            username=user.name,
+            amount=amount,
+            dateTime=datetime.utcnow(),
+            status='Pending',
+            transactionType='Deposit',
+            depositID=deposit.depositID,
+            userID=user_id
+        )
+        db.session.add(transaction)
+        db.session.commit()
+
+        deposit_schema = DepositSchema()
+        deposit_data = deposit_schema.dump(deposit)
+
+        response_data = {
+            'username': deposit_data['username'],
+            'Amount': deposit_data['amount'],
+            'date&Time': deposit_data['dateTime'],
+            'status': deposit_data['status'],
+            'DepositID': deposit_data['depositID'],
+            'UserID': deposit_data['userID'],
+            'message': 'Deposit added successfully',
+            'code': 'DEPOSIT_ADDED'
+        }
+
+        return jsonify(response_data), 201
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+    # //////////////////////////////////////////////////////////
+
+    
 
 # @app.route('/testWallet', methods=['POST'])
 # def testWallet():
