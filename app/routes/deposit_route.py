@@ -82,10 +82,6 @@ def ipn():
         return "Invalid HMAC signature", 400
 
     # Process the IPN data
-    print(ipn_data)  # Replace with your logic to handle the IPN data
-
-    # return "IPN received", 200
-    # //////////////////////////////////////////////////////////
     try:
         amount = float(ipn_data['Amount'])
         user_id = int(ipn_data['UserID'])
@@ -133,6 +129,10 @@ def ipn():
         return jsonify(response_data), 201
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+    
+
+    
+
 
     # //////////////////////////////////////////////////////////
 
