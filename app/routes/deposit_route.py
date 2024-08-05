@@ -12,6 +12,7 @@ import hmac
 import hashlib
 import logging
 from marshmallow import Schema, fields, ValidationError
+import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ config.read('config.ini')
 IPN_SECRET = config.get('secrets', 'IPN_SECRET', fallback='33061222')
 PUBLIC_KEY = config.get('secrets', 'PUBLIC_KEY', fallback='27a1a686f619457d14844017aba64d454ad15cf64eef40c82a37e7efa3985729')
 PRIVATE_KEY = config.get('secrets', 'PRIVATE_KEY', fallback='94E035c6F4ba4361C2deAa425b704Dd39f7c3aBa7275d8aF10eD6f96668e03b3')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Schema for transaction validation
 class TransactionSchema(Schema):
@@ -90,13 +92,18 @@ def create_transaction():
 @app.route('/ipn', methods=['POST'])
 def ipn():
     try:
+        # Log all incoming request data
         ipn_data = request.form.to_dict()
+        logging.info(f"Received IPN data: {ipn_data}")
+        logging.info(f"Received headers: {request.headers}")
 
+        # Retrieve HMAC signature from headers
         hmac_signature = request.headers.get('HMAC')
         if not hmac_signature:
+            logging.warning("HMAC signature missing")
             return "HMAC signature missing", 400
 
-        # Properly encode payload for HMAC verification
+        # Encode payload and calculate HMAC
         payload = urlencode(ipn_data)
         ipn_hmac = hmac.new(
             PRIVATE_KEY.encode('utf-8'),
@@ -104,15 +111,19 @@ def ipn():
             hashlib.sha512
         ).hexdigest()
 
+        # Compare calculated HMAC with received HMAC
         if hmac_signature != ipn_hmac:
+            logging.warning("Invalid HMAC signature")
+            logging.info(f"Expected HMAC: {ipn_hmac}, Received HMAC: {hmac_signature}")
             return "Invalid HMAC signature", 400
 
-        # Process the IPN data
+        # Process IPN data if HMAC is valid
         amount = float(ipn_data['Amount'])
         user_id = int(ipn_data['UserID'])
 
         user = User.query.get(user_id)
         if not user:
+            logging.error(f"User not found for ID: {user_id}")
             return jsonify({'message': 'User not found', 'code': 'USER_NOT_FOUND'}), 404
 
         deposit = Deposit(
@@ -151,6 +162,7 @@ def ipn():
             'code': 'DEPOSIT_ADDED'
         }
 
+        logging.info("IPN processed successfully")
         return jsonify(response_data), 201
 
     except Exception as e:
