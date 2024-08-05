@@ -38,6 +38,7 @@ transaction_schema = TransactionSchema()
 
 def create_headers(payload):
     encoded_payload = urlencode(payload)
+    print(payload)
     hmac_signature = hmac.new(
         PRIVATE_KEY.encode('utf-8'),
         encoded_payload.encode('utf-8'),
