@@ -10,22 +10,32 @@ from configparser import ConfigParser
 import requests
 import hmac
 import hashlib
-import time
-import urllib.parse
+import logging
+from marshmallow import Schema, fields, ValidationError
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-
-from configparser import ConfigParser
+# Load configuration
 config = ConfigParser()
 config.read('config.ini')
 
+IPN_SECRET = config.get('secrets', 'IPN_SECRET', fallback='33061222')
+PUBLIC_KEY = config.get('secrets', 'PUBLIC_KEY', fallback='27a1a686f619457d14844017aba64d454ad15cf64eef40c82a37e7efa3985729')
+PRIVATE_KEY = config.get('secrets', 'PRIVATE_KEY', fallback='94E035c6F4ba4361C2deAa425b704Dd39f7c3aBa7275d8aF10eD6f96668e03b3')
 
-IPN_SECRET = '33061222'
-PUBLIC_KEY = '27a1a686f619457d14844017aba64d454ad15cf64eef40c82a37e7efa3985729'
-PRIVATE_KEY = '94E035c6F4ba4361C2deAa425b704Dd39f7c3aBa7275d8aF10eD6f96668e03b3'
+# Schema for transaction validation
+class TransactionSchema(Schema):
+    amount = fields.Float(required=True)
+    currency1 = fields.Str(required=True)
+    currency2 = fields.Str(required=True)
+    buyer_email = fields.Email(required=True)
+    UserID = fields.Int(required=True)
+
+transaction_schema = TransactionSchema()
 
 def create_headers(payload):
-    encoded_payload = urllib.parse.urlencode(payload)
+    encoded_payload = urlencode(payload)
     hmac_signature = hmac.new(
         PRIVATE_KEY.encode('utf-8'),
         encoded_payload.encode('utf-8'),
@@ -38,51 +48,66 @@ def create_headers(payload):
 
 @app.route('/create_transaction', methods=['POST'])
 def create_transaction():
-    data = request.json
-    payload = {
-        'version': 1,
-        'key': PUBLIC_KEY,
-        'cmd': 'create_transaction',
-        'amount': data['amount'],
-        'currency1': data['currency1'],
-        'currency2': data['currency2'],
-        'buyer_email': data['buyer_email'],
-        'UserID': data['UserID'],
-        'ipn_url': 'https://5.189.141.126:443/ipn',  # Set your public IPN URL
-        'format': 'json'
-    }
-    headers = create_headers(payload)
-    response = requests.post('https://www.coinpayments.net/api.php', data=payload, headers=headers)
-    
-    if response.status_code != 200:
-        return jsonify({"error": "Failed to create transaction"}), response.status_code
-    
-    response_data = response.json()
-    
-    if response_data.get('error') != "ok":
-        return jsonify({"error": response_data.get('error')}), 400
-    
-    return jsonify(response_data)
+    try:
+        data = request.json
+        transaction_schema.load(data)  # Validate input data
+
+        payload = {
+            'version': 1,
+            'key': PUBLIC_KEY,
+            'cmd': 'create_transaction',
+            'amount': data['amount'],
+            'currency1': data['currency1'],
+            'currency2': data['currency2'],
+            'buyer_email': data['buyer_email'],
+            'UserID': data['UserID'],
+            'ipn_url': 'https://5.189.141.126:443/ipn',  # Set your public IPN URL
+            'format': 'json'
+        }
+        headers = create_headers(payload)
+        response = requests.post('https://www.coinpayments.net/api.php', data=payload, headers=headers)
+
+        if response.status_code != 200:
+            logging.error(f"Transaction creation failed with status {response.status_code}")
+            return jsonify({"error": "Failed to create transaction"}), response.status_code
+
+        response_data = response.json()
+
+        if response_data.get('error') != "ok":
+            logging.error(f"API error: {response_data.get('error')}")
+            return jsonify({"error": response_data.get('error')}), 400
+
+        return jsonify(response_data)
+
+    except ValidationError as err:
+        logging.warning("Validation error on transaction creation")
+        return jsonify({"errors": err.messages}), 400
+
+    except Exception as e:
+        logging.exception("Exception during transaction creation")
+        return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/ipn', methods=['POST'])
 def ipn():
-    ipn_data = request.form.to_dict()
-
-    hmac_signature = request.headers.get('HMAC')
-    if not hmac_signature:
-        return "HMAC signature missing", 400
-
-    ipn_hmac = hmac.new(
-        PRIVATE_KEY.encode('utf-8'),
-        request.data,
-        hashlib.sha512
-    ).hexdigest()
-
-    if hmac_signature != ipn_hmac:
-        return "Invalid HMAC signature", 400
-
-    # Process the IPN data
     try:
+        ipn_data = request.form.to_dict()
+
+        hmac_signature = request.headers.get('HMAC')
+        if not hmac_signature:
+            return "HMAC signature missing", 400
+
+        # Properly encode payload for HMAC verification
+        payload = urlencode(ipn_data)
+        ipn_hmac = hmac.new(
+            PRIVATE_KEY.encode('utf-8'),
+            payload.encode('utf-8'),
+            hashlib.sha512
+        ).hexdigest()
+
+        if hmac_signature != ipn_hmac:
+            return "Invalid HMAC signature", 400
+
+        # Process the IPN data
         amount = float(ipn_data['Amount'])
         user_id = int(ipn_data['UserID'])
 
@@ -127,57 +152,11 @@ def ipn():
         }
 
         return jsonify(response_data), 201
+
     except Exception as e:
+        logging.exception("Exception during IPN processing")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-    
 
-    
-
-
-    # //////////////////////////////////////////////////////////
-
-    
-
-# @app.route('/testWallet', methods=['POST'])
-# def testWallet():
-#     parser = ConfigParser()
-#     parser.read('config.ini')
-#     API_KEY = parser.get('apikeys', 'API_KEY')
-#     API_SECRET = parser.get('apikeys', 'API_SECRET')
-#     IPN_URL = parser.get('apikeys', 'IPN_URL')
-#
-#     create_transaction_params = {
-#         'amount': 10,
-#         'currency1': 'USD',
-#         'currency2': 'BTC',
-#         'ipn_url': IPN_URL
-#     }
-#
-#     transaction = coinpayments_api_call('create_transaction', create_transaction_params, API_KEY, API_SECRET)
-#
-#     if transaction['error'] == 'ok':
-#         print(transaction['result']['amount'])
-#         print(transaction['result']['address'])
-#         txn_id = transaction['result']['txn_id']
-#     else:
-#         print(transaction['error'])
-#         return jsonify({'message': transaction['error']}), 500
-#
-#     post_params1 = {
-#         'txid': txn_id
-#     }
-#
-#     transaction_info = coinpayments_api_call('get_tx_info', post_params1, API_KEY, API_SECRET)
-#
-#     if transaction_info['error'] == 'ok':
-#         print(transaction_info['result']['amountf'])
-#         print(transaction_info['result']['payment_address'])
-#     else:
-#         print(transaction_info['error'])
-#
-#     return jsonify({'message': 'Transaction tested successfully'}), 200
-#
-#
 @app.route('/add_deposit', methods=['POST'])
 def add_deposit():
     try:
@@ -226,8 +205,8 @@ def add_deposit():
 
         return jsonify(response_data), 201
     except Exception as e:
+        logging.exception("Exception during deposit addition")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit', methods=['GET'])
 def search_deposit_by_id():
@@ -255,8 +234,8 @@ def search_deposit_by_id():
 
         return jsonify(response_data), 200
     except Exception as e:
+        logging.exception("Exception during deposit search by ID")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/deposit_by_user_id', methods=['GET'])
 def search_deposits_by_user_id():
@@ -282,8 +261,8 @@ def search_deposits_by_user_id():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during deposit search by user ID")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit_by_status', methods=['GET'])
 def search_deposits_by_status():
@@ -309,8 +288,8 @@ def search_deposits_by_status():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during deposit search by status")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit_today', methods=['GET'])
 def search_deposit_today():
@@ -327,8 +306,8 @@ def search_deposit_today():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during today's deposit search")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit_week', methods=['GET'])
 def search_deposit_week():
@@ -347,8 +326,8 @@ def search_deposit_week():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during weekly deposit search")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit_month', methods=['GET'])
 def search_deposit_by_month():
@@ -376,8 +355,8 @@ def search_deposit_by_month():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during monthly deposit search")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/search_deposit_custom', methods=['GET'])
 def search_deposit_by_custom_date():
@@ -408,8 +387,8 @@ def search_deposit_by_custom_date():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during custom date deposit search")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/get_all_deposits', methods=['GET'])
 def get_all_deposits():
@@ -430,8 +409,8 @@ def get_all_deposits():
 
         return jsonify(deposit_data), 200
     except Exception as e:
+        logging.exception("Exception during retrieval of all deposits")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
-
 
 @app.route('/update_deposit_status', methods=['PUT'])
 def update_deposit_status():
@@ -459,4 +438,5 @@ def update_deposit_status():
 
         return jsonify({'message': 'Deposit status updated successfully', 'code': 'DEPOSIT_STATUS_UPDATED'}), 200
     except Exception as e:
+        logging.exception("Exception during deposit status update")
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
