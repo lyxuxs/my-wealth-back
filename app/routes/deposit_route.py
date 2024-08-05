@@ -96,7 +96,7 @@ def ipn():
         ipn_data = request.form.to_dict()
         logging.info(f"Received IPN data: {ipn_data}")
         logging.info(f"Received headers: {request.headers}")
-
+        print(ipn_data)
         # Retrieve HMAC signature from headers
         hmac_signature = request.headers.get('HMAC')
         if not hmac_signature:
