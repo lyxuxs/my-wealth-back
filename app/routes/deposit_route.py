@@ -22,8 +22,8 @@ config = ConfigParser()
 config.read('config.ini')
 
 IPN_SECRET = config.get('secrets', 'IPN_SECRET', fallback='33061222')
-PUBLIC_KEY = config.get('secrets', 'PUBLIC_KEY', fallback='27a1a686f619457d14844017aba64d454ad15cf64eef40c82a37e7efa3985729')
-PRIVATE_KEY = config.get('secrets', 'PRIVATE_KEY', fallback='94E035c6F4ba4361C2deAa425b704Dd39f7c3aBa7275d8aF10eD6f96668e03b3')
+PUBLIC_KEY = config.get('secrets', 'PUBLIC_KEY', fallback='6b93b55ba5a4e00cc1f9fcb401881c694dac40325acfb75ae2e0815975288c8d')
+PRIVATE_KEY = config.get('secrets', 'PRIVATE_KEY', fallback='B9C51ECabb2758d6f70BB68A5F24dd4ae2f2F65D4a35a38b4C8AA45b4c290900')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Schema for transaction validation
