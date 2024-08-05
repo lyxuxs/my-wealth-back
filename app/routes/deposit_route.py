@@ -96,12 +96,13 @@ def ipn():
         ipn_data = request.form.to_dict()
         logging.info(f"Received IPN data: {ipn_data}")
         logging.info(f"Received headers: {request.headers}")
-        print(ipn_data)
+        print("1")
         # Retrieve HMAC signature from headers
         hmac_signature = request.headers.get('HMAC')
         if not hmac_signature:
             logging.warning("HMAC signature missing")
             return "HMAC signature missing", 400
+        print("2")
 
         # Encode payload and calculate HMAC
         payload = urlencode(ipn_data)
@@ -110,16 +111,19 @@ def ipn():
             payload.encode('utf-8'),
             hashlib.sha512
         ).hexdigest()
+        print("3")
 
         # Compare calculated HMAC with received HMAC
         if hmac_signature != ipn_hmac:
             logging.warning("Invalid HMAC signature")
             logging.info(f"Expected HMAC: {ipn_hmac}, Received HMAC: {hmac_signature}")
             return "Invalid HMAC signature", 400
+        print("4")
 
         # Process IPN data if HMAC is valid
         amount = float(ipn_data['Amount'])
         user_id = int(ipn_data['UserID'])
+        print("5")
 
         user = User.query.get(user_id)
         if not user:
