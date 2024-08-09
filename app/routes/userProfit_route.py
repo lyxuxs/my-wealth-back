@@ -4,6 +4,7 @@ from app import app, db
 from app.models.userProfit_model import UserProfit
 from app.models.user_model import User
 
+
 @app.route('/getUserProfit', methods=['GET'])
 def getUserProfit():
     userID = request.args.get('userID')
@@ -23,8 +24,9 @@ def getUserProfit():
 
     return jsonify(response_data)
 
+
 @app.route('/getAllUserProfit', methods=['GET'])
-def getAll_profit():
+def getAllUserProfit():
     userProfits = UserProfit.query.all()
 
     response_data = []
