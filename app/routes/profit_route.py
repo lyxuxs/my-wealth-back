@@ -59,10 +59,12 @@ def add_profit():
                             profitType=profit_type,
                             userID=user.userID,
                             dateTime=datetime.utcnow())
-                        user.profit=float(packageShareAmount['amount'])
+                        
                         if profit_type == 'Profit':
+                            user.profit=float(packageShareAmount['amount'])
                             user.spotBalance += float(packageShareAmount['amount'])
                         else:
+                            user.profit=-float(packageShareAmount['amount'])
                             user.spotBalance -= float(packageShareAmount['amount'])
                         trade.trade_on_off = False
                         db.session.add(newUserProfit)
