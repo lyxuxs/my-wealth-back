@@ -14,7 +14,7 @@ def getUserProfit():
     for userProfit in userProfits:
         UserProfit_data = {
             'userProfitID': userProfit.userProfitID,
-            'DateTime': userProfit.dateTime,
+            'DateTime': userProfit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
             'TransactionType': userProfit.profitType,
             'Amount': userProfit.profitAmount,
             'profitID': userProfit.profitID,
@@ -33,7 +33,7 @@ def getAllUserProfit():
     for userProfit in userProfits:
         UserProfit_data = {
             'userProfitID': userProfit.userProfitID,
-            'DateTime': userProfit.dateTime,
+            'DateTime': userProfit.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
             'TransactionType': userProfit.profitType,
             'Amount': userProfit.profitAmount,
             'profitID': userProfit.profitID,
