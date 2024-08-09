@@ -9,10 +9,11 @@ from app.models.transaction_model import Transaction
 @app.route('/search_transaction', methods=['GET'])
 def search_transaction_by_id():
     try:
+        transaction_id = request.args.get('TransactionID')
+       # transaction_id = int(request.form.get('TransactionID'))
 
-        transaction_id = int(request.form.get('TransactionID'))
-
-        transaction = Transaction.query.get(transaction_id)
+        transaction = Transaction.query.filter_by(transactionID=transaction_id).first()
+#        transaction = Transaction.query.get(transaction_id)
 
         if not transaction:
             return jsonify({'message': 'Transaction not found', 'code': 'TRANSACTION_NOT_FOUND'}), 404
@@ -37,8 +38,8 @@ def search_transaction_by_id():
 @app.route('/transaction_by_user_id', methods=['GET'])
 def search_transaction_by_user_id():
     try:
-
-        user_id = int(request.form.get('UserID'))
+        user_id = request.args.get('UserID')
+        #user_id = int(request.form.get('UserID'))
 
         transactions = Transaction.query.filter_by(userID=user_id).all()
 
@@ -61,6 +62,34 @@ def search_transaction_by_user_id():
         return jsonify(transaction_data), 200
     except Exception as e:
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
+@app.route('/userConfirmTransaction', methods=['GET'])
+def search_userConfirmTransaction():
+    try:
+        user_id = request.args.get('UserID')
+        transactions = Transaction.query.filter(Transaction.userID == user_id, Transaction.status != "Pending").all()
+
+
+        if not transactions:
+            return jsonify({'message': 'No transactions found for the user', 'code': 'NO_TRANSACTIONS_FOUND'}), 404
+
+        transaction_data = []
+        for transaction in transactions:
+            transaction_info = {
+                'TransactionID': transaction.transactionID,
+                'Username': transaction.username,
+                'Amount': transaction.amount,
+                'DateTime': transaction.dateTime.strftime('%Y-%m-%d %H:%M:%S'),
+                'TransactionType': transaction.transactionType,
+                'Status': transaction.status,
+                'UserID': transaction.userID
+            }
+            transaction_data.append(transaction_info)
+
+        return jsonify(transaction_data), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
+
 
 
 @app.route('/transaction_by_status', methods=['GET'])
