@@ -42,6 +42,20 @@ def create_transferout():
     return jsonify(response_data), 201
 
 
+@app.route('/userTotalTransferOut', methods=['GET'])
+def get_user_total_tranferout():
+    user_id = request.args.get('UserID')
+    userTransferouts = TransferOut.query.filter_by(userID=user_id).all()
+    TotalTransferOut = sum(
+        transferOut.amount for transferOut in userTransferouts)
+
+    response_data = {
+        'TotalTransferOut': TotalTransferOut
+    }
+
+    return jsonify(response_data)
+
+
 @app.route('/transferOut_search', methods=['GET'])
 def search_transferOut_by_user_id():
     user_id = request.args.get('userID')
@@ -59,7 +73,7 @@ def search_transferOut_by_user_id():
         transferOuts_data.append({
             'data&Time': transferOut.dateTime,
             'Amount': transferOut.amount,
-            'TransferOutID': transferOut.transferID,
+            'TransferOutID': transferOut.transferOutID,
             'UserID': transferOut.userID
         })
 

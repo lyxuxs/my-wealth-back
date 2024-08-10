@@ -5,7 +5,8 @@ ma = Marshmallow()
 
 class AdminSchema(ma.Schema):
     class Meta:
-        fields = ('admin_id', 'user_name', 'email', 'password', 'otp', 'is_verified')
+        fields = ('admin_id', 'user_name', 'email',
+                  'password', 'otp', 'is_verified')
 
 
 class MainAdminSchema(ma.Schema):
@@ -15,7 +16,8 @@ class MainAdminSchema(ma.Schema):
 
 class PackageSchema(ma.Schema):
     class Meta:
-        fields = ('packageID', 'packageName', 'personalMinFund', 'personalMaxFund', 'rebateFee')
+        fields = ('packageID', 'packageName', 'personalMinFund',
+                  'personalMaxFund', 'rebateFee')
 
 
 class UserSchema(ma.Schema):
@@ -41,13 +43,16 @@ class TransferSchema(ma.Schema):
     class Meta:
         fields = ('transferID', 'dateTime', 'amount', 'From', 'to', 'userID')
 
+
 class TransferOutSchema(ma.Schema):
     class Meta:
         fields = ('transferOutID', 'dateTime', 'amount', 'userID')
 
+
 class DepositSchema(ma.Schema):
     class Meta:
-        fields = ('depositID', 'username', 'amount', 'dateTime', 'status', 'userID')
+        fields = ('depositID', 'username', 'amount',
+                  'dateTime', 'status', 'userID')
 
 
 class TransactionSchema(ma.Schema):
@@ -72,26 +77,33 @@ class TradeSchema(ma.Schema):
 class ProfitSchema(ma.Schema):
     class Meta:
         fields = ('profitID', 'profitAmount', 'dateTime', 'tradeID')
-        
+
 
 class UserProfitSchema(ma.Schema):
     class Meta:
-        fields = ('userProfitID','profitType','profitAmount','dateTime','profitID','userID')
+        fields = ('userProfitID', 'profitType', 'profitAmount',
+                  'dateTime', 'profitID', 'userID')
 
 
 class LevelASchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
+        fields = ('refTreeID', 'userID', 'friendUserID', 'isFriendAdmin')
 
 
 class LevelBSchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
+        fields = ('refTreeID', 'userID', 'friendUserID', 'isFriendAdmin')
 
 
 class LevelCSchema(ma.Schema):
     class Meta:
-        fields = ('refTreeID', 'userID', 'friendUserID','isFriendAdmin')
+        fields = ('refTreeID', 'userID', 'friendUserID', 'isFriendAdmin')
+
+
+class CommissionSchema(ma.Schema):
+    class Meta:
+        fields = ('commissionID', 'commissionAmount',
+                  'commissionType', 'dateTime', 'userID')
 
 
 level_a_schema = LevelASchema()
@@ -110,3 +122,4 @@ withdrawal_schema = WithdrawalSchema()
 trade_schema = TradeSchema()
 profit_schema = ProfitSchema()
 user_profit_schema = UserProfitSchema()
+commission_schema = CommissionSchema()
