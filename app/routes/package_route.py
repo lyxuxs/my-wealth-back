@@ -128,3 +128,23 @@ def search_package_by_fund():
     else:
 
         return jsonify({'message': 'Package Not Found for the given fund', 'code': 404}), 404
+
+
+@app.route('/package_delete/<int:packageID>', methods=['DELETE'])
+def delete_package(packageID):
+    try:
+        print(f"Received request to delete package with ID: {packageID}")
+        package = Package.query.get(packageID)
+        if not package:
+            return jsonify({'message': 'Package not found with the given ID', 'code': 404}), 404
+
+        db.session.delete(package)
+        db.session.commit()
+
+        print(f"Package with ID {packageID} deleted successfully")
+        return jsonify({'message': 'Package deleted successfully', 'code': 200}), 200
+
+    except Exception as e:
+        print(
+            f"Error occurred while deleting package with ID {packageID}: {str(e)}")
+        return jsonify({'message': 'Internal server error', 'error': str(e), 'code': 500}), 500
