@@ -22,7 +22,7 @@ def send_otp_email(email, otp, user_name):
 
 @app.route('/admin_register', methods=['POST'])
 def create_admin():
-    SEND_OTP_EMAIL = 'linifernando123@gmail.com'
+    SEND_OTP_EMAIL = 'investment.mywealth@gmail.com'
     user_name = request.json.get('user_name')
     email = request.json.get('email')
     password = request.json.get('password')
@@ -32,7 +32,8 @@ def create_admin():
         return jsonify({'message': 'Admin already exists with the given email', 'code': 400}), 400
 
     otp = generate_otp()
-    new_admin = Admin(user_name=user_name, email=email, password=password, otp=otp)
+    new_admin = Admin(user_name=user_name, email=email,
+                      password=password, otp=otp)
     db.session.add(new_admin)
     db.session.commit()
 
