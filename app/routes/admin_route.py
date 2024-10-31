@@ -2,6 +2,8 @@ from random import randint
 
 from flask import jsonify, request
 from flask_mail import Mail, Message
+from flask import render_template
+from datetime import datetime
 
 from app import app
 from app import db
@@ -9,6 +11,92 @@ from app.models.admin_model import Admin
 
 mail = Mail(app)
 
+def render_otp_email(otp, user_name):
+    # Fill in the HTML template with the OTP and year
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>MyWealth OTP</title>
+      <style>
+        body, html {{
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          background-color: #f5f8fa;
+          font-family: Arial, sans-serif;
+        }}
+        .container {{
+          width: 100%;
+          max-width: 600px;
+          margin: auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+        }}
+        .header {{
+          background-color: #2b6777;
+          padding: 20px;
+          text-align: center;
+        }}
+        .header img {{
+          max-width: 150px;
+          height: auto;
+        }}
+        .content {{
+          padding: 20px;
+          color: #333;
+          text-align: center;
+        }}
+        .otp {{
+          display: inline-block;
+          padding: 10px 20px;
+          background-color: #2b6777;
+          color: #fff;
+          font-size: 24px;
+          font-weight: bold;
+          border-radius: 5px;
+          margin: 20px 0;
+        }}
+        .footer {{
+          padding: 10px 20px;
+          text-align: center;
+          font-size: 12px;
+          color: #999;
+        }}
+        @media (max-width: 600px) {{
+          .header, .content, .footer {{
+            padding: 10px;
+          }}
+          .otp {{
+            font-size: 20px;
+          }}
+        }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="your-logo-url-here" alt="MyWealth Logo">
+        </div>
+        <div class="content">
+          <h1>One-Time Password (OTP)</h1>
+          <p>Hello {user_name},</p>
+          <p>To complete your registration, please use the following One-Time Password:</p>
+          <div class="otp">{otp}</div>
+          <p>This code is valid for the next 10 minutes. If you did not request this OTP, please ignore this message or contact support.</p>
+          <p>Thank you for choosing MyWealth!</p>
+        </div>
+        <div class="footer">
+          © {datetime.now().year} MyWealth. All rights reserved. <br>
+          MyWealth, Investing made for everyone.
+        </div>
+      </div>
+    </body>
+    </html>
+    """
 
 def generate_otp():
     return randint(1000, 9999)
@@ -16,7 +104,7 @@ def generate_otp():
 
 def send_otp_email(email, otp, user_name):
     msg = Message('New Admin Registration OTP', recipients=[email])
-    msg.body = f'Hello {user_name}, your registration OTP is: {otp}'
+    msg.html = render_otp_email(otp, user_name)  # Set the HTML content
     mail.send(msg)
 
 
