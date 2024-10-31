@@ -79,7 +79,7 @@ def render_otp_email(otp, user_name):
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://private-user-images.githubusercontent.com/60685269/382091791-d40c2b08-04ce-4875-b7aa-5a89c8b12194.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzA0MDM2OTgsIm5iZiI6MTczMDQwMzM5OCwicGF0aCI6Ii82MDY4NTI2OS8zODIwOTE3OTEtZDQwYzJiMDgtMDRjZS00ODc1LWI3YWEtNWE4OWM4YjEyMTk0LnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMzElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDMxVDE5MzYzOFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWVlOWJkMDg1NDY3MDVmN2M3YWMxNmE3OGRhZmE1ZWQ3MGFlM2M1NmE5MWM0MzkyYjIwMTlmMTA0ZWU3MTAzMjYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.w4dLh2yKOMtq7roKI98ELJ5Z0fGL6ACv-ghvVkwntGs" alt="MyWealth Logo">
+          <img src="https://www.mywealth.com.co/images/mywealthlogo-white.svg" alt="MyWealth Logo">
         </div>
         <div class="content">
           <h1>One-Time Password (OTP)</h1>
