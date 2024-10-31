@@ -42,7 +42,7 @@ def render_otp_email(otp):
           overflow: hidden;
         }}
         .header {{
-          background-color: #2b6777;
+          background-color: #007AFF;
           padding: 20px;
           text-align: center;
         }}
@@ -58,7 +58,7 @@ def render_otp_email(otp):
         .otp {{
           display: inline-block;
           padding: 10px 20px;
-          background-color: #2b6777;
+          background-color: #007AFF;
           color: #fff;
           font-size: 24px;
           font-weight: bold;
@@ -84,7 +84,7 @@ def render_otp_email(otp):
     <body>
       <div class="container">
         <div class="header">
-          <img src="your-logo-url-here" alt="MyWealth Logo">
+          <img src="https://private-user-images.githubusercontent.com/60685269/382091791-d40c2b08-04ce-4875-b7aa-5a89c8b12194.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzA0MDM2OTgsIm5iZiI6MTczMDQwMzM5OCwicGF0aCI6Ii82MDY4NTI2OS8zODIwOTE3OTEtZDQwYzJiMDgtMDRjZS00ODc1LWI3YWEtNWE4OWM4YjEyMTk0LnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMzElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDMxVDE5MzYzOFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWVlOWJkMDg1NDY3MDVmN2M3YWMxNmE3OGRhZmE1ZWQ3MGFlM2M1NmE5MWM0MzkyYjIwMTlmMTA0ZWU3MTAzMjYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.w4dLh2yKOMtq7roKI98ELJ5Z0fGL6ACv-ghvVkwntGs" alt="MyWealth Logo">
         </div>
         <div class="content">
           <h1>One-Time Password (OTP)</h1>
@@ -117,7 +117,7 @@ def generate_otp():
     return random.randint(1000, 9999)
 
 
-def add_to_level_c(user_id, friend_user_id,isAdmin):
+def add_to_level_c(user_id, friend_user_id, isAdmin):
     level_c = LevelC(
         userID=user_id,
         friendUserID=friend_user_id,
@@ -128,7 +128,7 @@ def add_to_level_c(user_id, friend_user_id,isAdmin):
     return level_c
 
 
-def add_to_level_b(user_id, ref_tree_id, friend_user_id,isAdmin):
+def add_to_level_b(user_id, ref_tree_id, friend_user_id, isAdmin):
     level_b = LevelB(
         refTreeID=ref_tree_id,
         userID=user_id,
@@ -140,7 +140,7 @@ def add_to_level_b(user_id, ref_tree_id, friend_user_id,isAdmin):
     return level_b
 
 
-def add_to_level_a(user_id, ref_tree_id, friend_user_id,isAdmin):
+def add_to_level_a(user_id, ref_tree_id, friend_user_id, isAdmin):
     level_a = LevelA(
         refTreeID=ref_tree_id,
         userID=user_id,
@@ -157,7 +157,7 @@ def user_register():
     referral = request.form.get('friendReferral')
     friend_user = User.query.filter_by(myReferral=referral).first()
     friend_admin = MainAdmin.query.filter_by(adminReferral=referral).first()
-   
+
     if friend_user or friend_admin:
         package_id = request.form.get('packageID')
         name = request.form.get('name')
@@ -184,33 +184,41 @@ def user_register():
         )
         db.session.add(new_user)
         db.session.commit()
-        
+
         new_user = User.query.filter_by(email=email).first()
-       
+
         user_id = new_user.userID
 
         if friend_user:
-            level_c = add_to_level_c(user_id, friend_user.userID,False)
-            
-            levelB_friendUser = User.query.filter_by(myReferral=friend_user.friendReferral).first()
-            levelB_friendAdmin = MainAdmin.query.filter_by(adminReferral=friend_user.friendReferral).first()
-            
+            level_c = add_to_level_c(user_id, friend_user.userID, False)
+
+            levelB_friendUser = User.query.filter_by(
+                myReferral=friend_user.friendReferral).first()
+            levelB_friendAdmin = MainAdmin.query.filter_by(
+                adminReferral=friend_user.friendReferral).first()
+
             if levelB_friendUser:
-                add_to_level_b(friend_user.userID, level_c.refTreeID, levelB_friendUser.userID,False)
-                
-                levelA_friendUser = User.query.filter_by(myReferral=levelB_friendUser.friendReferral).first()
-                levelA_friendAdmin = MainAdmin.query.filter_by(adminReferral=levelB_friendUser.friendReferral).first()
+                add_to_level_b(friend_user.userID, level_c.refTreeID,
+                               levelB_friendUser.userID, False)
+
+                levelA_friendUser = User.query.filter_by(
+                    myReferral=levelB_friendUser.friendReferral).first()
+                levelA_friendAdmin = MainAdmin.query.filter_by(
+                    adminReferral=levelB_friendUser.friendReferral).first()
                 if levelA_friendUser:
-                    add_to_level_a(levelB_friendUser.userID, level_c.refTreeID, levelA_friendUser.userID,False)
+                    add_to_level_a(
+                        levelB_friendUser.userID, level_c.refTreeID, levelA_friendUser.userID, False)
                 elif levelA_friendAdmin:
-                    add_to_level_a(levelB_friendUser.userID, level_c.refTreeID, None,True)
-            
+                    add_to_level_a(levelB_friendUser.userID,
+                                   level_c.refTreeID, None, True)
+
             elif levelB_friendAdmin:
-                add_to_level_b(friend_user.userID, level_c.refTreeID, None,True)
-        
+                add_to_level_b(friend_user.userID,
+                               level_c.refTreeID, None, True)
+
         elif friend_admin:
-            level_c = add_to_level_c(user_id, None,True)
-                 
+            level_c = add_to_level_c(user_id, None, True)
+
         response_data = {
             'name': new_user.name,
             'email': new_user.email,
@@ -225,7 +233,7 @@ def user_register():
             'message': 'Success',
             'code': 200
         }
-        
+
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'Friend referral not found', 'code': 404}), 404
@@ -245,28 +253,30 @@ def search():
     level_c_data = []
 
     for level_c in level_c_results:
-        level_a_results = LevelA.query.filter_by(refTreeID=level_c.refTreeID).all()
-        level_b_results = LevelB.query.filter_by(refTreeID=level_c.refTreeID).all()
+        level_a_results = LevelA.query.filter_by(
+            refTreeID=level_c.refTreeID).all()
+        level_b_results = LevelB.query.filter_by(
+            refTreeID=level_c.refTreeID).all()
 
         level_a_data += [{
-            'refTreeID':LevelA.refTreeID,
-            'userID':LevelA.userID,
-            'friendUserID':LevelA.friendUserID ,
-            'isFriendAdmin':LevelA.isFriendAdmin
+            'refTreeID': LevelA.refTreeID,
+            'userID': LevelA.userID,
+            'friendUserID': LevelA.friendUserID,
+            'isFriendAdmin': LevelA.isFriendAdmin
         } for level_a in level_a_results]
 
         level_b_data += [{
-            'refTreeID':LevelB.refTreeID,
-            'userID':LevelB.userID,
-            'friendUserID':LevelB.friendUserID ,
-            'isFriendAdmin':LevelB.isFriendAdmin
+            'refTreeID': LevelB.refTreeID,
+            'userID': LevelB.userID,
+            'friendUserID': LevelB.friendUserID,
+            'isFriendAdmin': LevelB.isFriendAdmin
         } for level_b in level_b_results]
 
         level_c_data.append({
-            'refTreeID':LevelC.refTreeID,
-            'userID':LevelC.userID,
-            'friendUserID':LevelC.friendUserID ,
-            'isFriendAdmin':LevelC.isFriendAdmin
+            'refTreeID': LevelC.refTreeID,
+            'userID': LevelC.userID,
+            'friendUserID': LevelC.friendUserID,
+            'isFriendAdmin': LevelC.isFriendAdmin
         })
 
     response_data = {
@@ -385,7 +395,7 @@ def search_user_by_id():
         response_data = {
             'name': user.name,
             'email': user.email,
-            'packageID':user.packageID,
+            'packageID': user.packageID,
             'myReferral': user.myReferral,
             'friendReferral': user.friendReferral,
             'spotBalance': user.spotBalance,
@@ -453,7 +463,8 @@ def get_all_users_spot_balance():
 @app.route('/users_total_balance', methods=['GET'])
 def get_all_users_total_balance():
     total_spot_balance = sum(user.spotBalance for user in User.query.all())
-    total_funding_balance = sum(user.fundingBalance for user in User.query.all())
+    total_funding_balance = sum(
+        user.fundingBalance for user in User.query.all())
     total_balance = total_spot_balance + total_funding_balance
 
     response_data = {
@@ -539,7 +550,8 @@ def check_user_otp():
 
     decrypted_stored_otp = user.OTP
 
-    encrypted_entered_otp = hashlib.sha256(str(otp_entered).encode()).hexdigest()
+    encrypted_entered_otp = hashlib.sha256(
+        str(otp_entered).encode()).hexdigest()
 
     if decrypted_stored_otp == encrypted_entered_otp:
         user.isVerify = True
@@ -564,27 +576,28 @@ def check_user_otp():
     else:
         return jsonify({'message': 'Invalid OTP', 'code': 401}), 401
 
+
 @app.route('/rt_users_trade_balance', methods=['GET'])
 def get_all_rt_users_trade_balance():
     rt_users = User.query.filter_by(RT=True).all()
     user_list = []
-    total_trade_balance=0
+    total_trade_balance = 0
     for user in rt_users:
         package = Package.query.get(user.packageID)
         total_trade_balance += package.personalMinFund
-        
+
         user_data = {
             'name': user.name,
             'email': user.email,
             'spotBalance': user.spotBalance,
             'fundingBalance': user.fundingBalance,
             'userID': user.userID,
-            'packageID':user.packageID,
-            'packageMinFund':package.personalMinFund,
-            'packageName':package.packageName
+            'packageID': user.packageID,
+            'packageMinFund': package.personalMinFund,
+            'packageName': package.packageName
         }
         user_list.append(user_data)
-    
+
     response_data = {
         'total_trade_balance': total_trade_balance,
         'trade_users': user_list
