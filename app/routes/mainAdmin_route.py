@@ -5,6 +5,7 @@ from flask import jsonify, request
 from app import app
 from app import db
 from app.models.mainAdmin_model import MainAdmin
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/main_admin_create', methods=['POST'])
@@ -28,6 +29,7 @@ def create_main_admin():
 
 
 @app.route('/main_admin_update/<email>', methods=['PUT'])
+@jwt_required()
 def update_main_admin(email):
     name = request.form.get('name')
     password = request.form.get('password')

@@ -4,9 +4,11 @@ from flask import jsonify, request
 from app import app
 from app import db
 from app.models.trade_model import Trade
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/create_trade', methods=['POST'])
+@jwt_required()
 def create_trade():
     try:
         amount = float(request.form.get('Amount'))
@@ -32,6 +34,7 @@ def create_trade():
 
 
 @app.route('/update_trade', methods=['PUT'])
+@jwt_required()
 def update_trade_on_off():
     try:
         trade_id = int(request.form.get('TradeID'))
@@ -56,6 +59,7 @@ def update_trade_on_off():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/getAll_trade', methods=['GET'])
+@jwt_required()
 def getAll_trade():
     trades = Trade.query.all()
 

@@ -5,9 +5,11 @@ from flask import request, jsonify
 from app import app, db
 from app.models.user_model import User
 from app.models.levelB_model import  LevelB
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/getAllLevelB', methods=['GET'])
+@jwt_required()
 def getAllLevelB():
     try:
         levelBs = LevelB.query.all()
@@ -28,6 +30,7 @@ def getAllLevelB():
     
 
 @app.route('/userLevelB', methods=['GET'])
+@jwt_required()
 def userLevelB():
     try:
         user_id = request.args.get('userID')

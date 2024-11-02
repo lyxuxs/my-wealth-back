@@ -8,11 +8,13 @@ from app.models.transaction_model import Transaction
 from app.models.user_model import User
 from app.models.withdrawal_model import Withdrawal
 from app.schemas import WithdrawalSchema
+from flask_jwt_extended import jwt_required
 
 WITHDRAWAL_NETWORK = "PayPal"
 
 
 @app.route('/add_withdrawal', methods=['POST'])
+@jwt_required()
 def add_withdrawal():
     try:
 
@@ -71,6 +73,7 @@ def add_withdrawal():
 
 
 @app.route('/search_withdrawal', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_id():
     try:
 
@@ -98,6 +101,7 @@ def search_withdrawal_by_id():
 
 
 @app.route('/withdrawal_by_user_id', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_user():
     try:
 
@@ -126,6 +130,7 @@ def search_withdrawal_by_user():
 
 
 @app.route('/withdrawal_by_status', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_status():
     try:
 
@@ -155,6 +160,7 @@ def search_withdrawal_by_status():
 
 
 @app.route('/withdrawal_by_today', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_date_today():
     try:
 
@@ -186,6 +192,7 @@ from datetime import datetime, timedelta
 
 
 @app.route('/withdrawal_by_week', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_date_week():
     try:
 
@@ -219,6 +226,7 @@ def search_withdrawal_by_date_week():
 
 
 @app.route('/withdrawal_by_month', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_month():
     try:
 
@@ -252,6 +260,7 @@ def search_withdrawal_by_month():
 
 
 @app.route('/withdrawal_by_custom', methods=['GET'])
+@jwt_required()
 def search_withdrawal_by_custom_date():
     try:
 
@@ -287,6 +296,7 @@ def search_withdrawal_by_custom_date():
 
 
 @app.route('/get_all_withdrawals', methods=['GET'])
+@jwt_required()
 def get_all_withdrawals():
     try:
 
@@ -304,6 +314,7 @@ def get_all_withdrawals():
 
 
 @app.route('/update_withdrawal_status', methods=['PUT'])
+@jwt_required()
 def update_withdrawal_status():
     try:
 

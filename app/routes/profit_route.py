@@ -8,6 +8,7 @@ from app.models.profit_model import Profit
 from app.models.trade_model import Trade
 from app.models.userProfit_model import UserProfit
 from app.models.user_model import User
+from flask_jwt_extended import jwt_required
 
 
 def addCommission(commission, userId):
@@ -98,6 +99,7 @@ def addCommission(commission, userId):
 
 
 @app.route('/add_profit', methods=['POST'])
+@jwt_required()
 def add_profit():
     try:
         trade_id = int(request.form.get('TradeID'))
@@ -195,6 +197,7 @@ def add_profit():
 
 
 @app.route('/getAll_profit', methods=['GET'])
+@jwt_required()
 def getAll_profit():
     profits = Profit.query.all()
 

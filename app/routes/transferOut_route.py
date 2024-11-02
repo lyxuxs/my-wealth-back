@@ -7,9 +7,11 @@ from app import app, db
 from app.models.transferOut_model import TransferOut
 from app.models.user_model import User
 from app.schemas import transferOut_schema
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/transferOut', methods=['POST'])
+@jwt_required()
 def create_transferout():
     data = request.form
 
@@ -43,6 +45,7 @@ def create_transferout():
 
 
 @app.route('/userTotalTransferOut', methods=['GET'])
+@jwt_required()
 def get_user_total_tranferout():
     user_id = request.args.get('UserID')
     userTransferouts = TransferOut.query.filter_by(userID=user_id).all()
@@ -57,6 +60,7 @@ def get_user_total_tranferout():
 
 
 @app.route('/transferOut_search', methods=['GET'])
+@jwt_required()
 def search_transferOut_by_user_id():
     user_id = request.args.get('userID')
 

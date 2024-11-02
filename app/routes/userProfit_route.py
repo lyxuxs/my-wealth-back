@@ -3,9 +3,11 @@ from flask import json, request, jsonify
 from app import app, db
 from app.models.userProfit_model import UserProfit
 from app.models.user_model import User
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/getUserProfit', methods=['GET'])
+@jwt_required()
 def getUserProfit():
     userID = request.args.get('userID')
     userProfits = UserProfit.query.filter(UserProfit.userID == userID).all()
@@ -26,6 +28,7 @@ def getUserProfit():
 
 
 @app.route('/getAllUserProfit', methods=['GET'])
+@jwt_required()
 def getAllUserProfit():
     userProfits = UserProfit.query.all()
 

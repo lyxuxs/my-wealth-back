@@ -3,9 +3,11 @@ from flask import jsonify, request
 from app import app
 from app import db
 from app.models.package_model import Package
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/create_package', methods=['POST'])
+@jwt_required()
 def create_package():
     package_name = request.form.get('packageName')
     personal_min_fund = request.form.get('personalMinFund')
@@ -36,6 +38,7 @@ def create_package():
 
 
 @app.route('/update_package', methods=['PUT'])
+@jwt_required()
 def update_package():
     package_id = request.form.get('packageID')
     package_name = request.form.get('packageName')
@@ -68,6 +71,7 @@ def update_package():
 
 
 @app.route('/search_package', methods=['POST'])
+@jwt_required()
 def search_package_by_id():
     package_id = request.form.get('packageID')
 
@@ -89,6 +93,7 @@ def search_package_by_id():
 
 
 @app.route('/get_packages', methods=['GET'])
+@jwt_required()
 def get_packages():
     packages = Package.query.all()
 
@@ -107,6 +112,7 @@ def get_packages():
 
 
 @app.route('/search_package_by_fund', methods=['POST'])
+@jwt_required()
 def search_package_by_fund():
     personal_fund = float(request.form.get('personalFund'))
 
@@ -131,6 +137,7 @@ def search_package_by_fund():
 
 
 @app.route('/package_delete/<int:packageID>', methods=['DELETE'])
+@jwt_required()
 def delete_package(packageID):
     try:
         print(f"Received request to delete package with ID: {packageID}")

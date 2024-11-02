@@ -2,9 +2,11 @@ from flask import jsonify, request
 from app import app
 from app import db
 from app.models.commission_model import Commission
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/userTotalCommisson', methods=['GET'])
+@jwt_required()
 def get_user_total_commission():
     user_id = request.args.get('UserID')
     userCommissions = Commission.query.filter_by(userID=user_id).all()
@@ -19,6 +21,7 @@ def get_user_total_commission():
 
 
 @app.route('/commission_by_user_id', methods=['GET'])
+@jwt_required()
 def search_commission_by_user_id():
     try:
         user_id = request.args.get('UserID')
@@ -45,6 +48,7 @@ def search_commission_by_user_id():
 
 
 @app.route('/getAll_commisiions', methods=['GET'])
+@jwt_required()
 def getAll_commissions():
     commissions = Commission.query.all()
 

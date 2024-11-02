@@ -1,6 +1,7 @@
 from datetime import datetime, date, timedelta
 from urllib.parse import urlencode
 from flask import Flask, jsonify, request
+from flask_jwt_extended import jwt_required
 from app import app, db
 from app.models.deposit_model import Deposit
 from app.models.transaction_model import Transaction
@@ -50,6 +51,7 @@ def create_headers(payload):
     return headers
 
 @app.route('/create_transaction', methods=['POST'])
+@jwt_required()
 def create_transaction():
     try:
         data = request.json
@@ -180,6 +182,7 @@ def ipn():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/add_deposit', methods=['POST'])
+@jwt_required()
 def add_deposit():
     try:
         amount = float(request.form.get('Amount'))
@@ -231,6 +234,7 @@ def add_deposit():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit', methods=['GET'])
+@jwt_required()
 def search_deposit_by_id():
     try:
         deposit_id = int(request.args.get('depositID'))
@@ -260,6 +264,7 @@ def search_deposit_by_id():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/deposit_by_user_id', methods=['GET'])
+@jwt_required()
 def search_deposits_by_user_id():
     try:
         user_id = int(request.args.get('UserID'))
@@ -287,6 +292,7 @@ def search_deposits_by_user_id():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit_by_status', methods=['GET'])
+@jwt_required()
 def search_deposits_by_status():
     try:
         status = str(request.args.get('status'))
@@ -314,6 +320,7 @@ def search_deposits_by_status():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit_today', methods=['GET'])
+@jwt_required()
 def search_deposit_today():
     try:
         today = date.today()
@@ -332,6 +339,7 @@ def search_deposit_today():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit_week', methods=['GET'])
+@jwt_required()
 def search_deposit_week():
     try:
         today = datetime.today()
@@ -352,6 +360,7 @@ def search_deposit_week():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit_month', methods=['GET'])
+@jwt_required()
 def search_deposit_by_month():
     try:
         current_month = datetime.now().month
@@ -381,6 +390,7 @@ def search_deposit_by_month():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/search_deposit_custom', methods=['GET'])
+@jwt_required()
 def search_deposit_by_custom_date():
     try:
         start_date = request.args.get('start_date')
@@ -413,6 +423,7 @@ def search_deposit_by_custom_date():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/get_all_deposits', methods=['GET'])
+@jwt_required()
 def get_all_deposits():
     try:
         deposits = Deposit.query.all()
@@ -435,6 +446,7 @@ def get_all_deposits():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/update_deposit_status', methods=['PUT'])
+@jwt_required()
 def update_deposit_status():
     try:
         deposit_id = int(request.form.get('DepositID'))

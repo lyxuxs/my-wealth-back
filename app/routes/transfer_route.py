@@ -8,9 +8,11 @@ from app.models.package_model import Package
 from app.models.transfer_model import Transfer
 from app.models.user_model import User
 from app.schemas import transfer_schema
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/transfer', methods=['POST'])
+@jwt_required()
 def create_transfer():
     data = request.form
 
@@ -76,6 +78,7 @@ def create_transfer():
 
 
 @app.route('/transfer_search', methods=['GET'])
+@jwt_required()
 def search_transfer_by_user_id():
     user_id = request.form.get('userID')
 
@@ -102,6 +105,7 @@ def search_transfer_by_user_id():
 
 
 @app.route('/search_today', methods=['GET'])
+@jwt_required()
 def search_transfer_by_user_and_date_today():
     try:
 
@@ -138,6 +142,7 @@ def search_transfer_by_user_and_date_today():
 
 
 @app.route('/search_week', methods=['GET'])
+@jwt_required()
 def search_transfer_by_user_and_date_this_week():
     try:
 
@@ -175,6 +180,7 @@ def search_transfer_by_user_and_date_this_week():
 
 
 @app.route('/search_month', methods=['GET'])
+@jwt_required()
 def search_transfer_by_user_and_date_this_month():
     try:
 
@@ -212,6 +218,7 @@ def search_transfer_by_user_and_date_this_month():
 
 
 @app.route('/search_custom', methods=['GET'])
+@jwt_required()
 def search_transfer_by_user_and_custom_date_range():
     try:
 

@@ -15,6 +15,8 @@ from app.models.levelC_model import LevelC
 from app.models.package_model import Package
 from app.models.user_model import User
 from app.routes.admin_route import mail
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import create_access_token
 
 def render_otp_email(otp):
     # Fill in the HTML template with the OTP and year
@@ -313,7 +315,10 @@ def user_login():
     if user.password != hashed_password:
         return jsonify({'message': 'Invalid credentials', 'code': 401}), 401
 
+    token = create_access_token(identity=user.userID)
+    
     response_data = {
+        'token':token,
         'name': user.name,
         'email': user.email,
         'myReferral': user.myReferral,
@@ -331,6 +336,7 @@ def user_login():
 
 
 @app.route('/user_update/<int:userID>', methods=['PUT'])
+@jwt_required()
 def user_update(userID):
     user = User.query.get(userID)
 
@@ -387,6 +393,7 @@ def user_update(userID):
 
 
 @app.route('/search_user_by_id', methods=['GET'])
+@jwt_required()
 def search_user_by_id():
     user_id = request.args.get('userID')
 
@@ -414,6 +421,7 @@ def search_user_by_id():
 
 
 @app.route('/get_all_users', methods=['GET'])
+@jwt_required()
 def get_all_users():
     users = User.query.all()
     user_list = []
@@ -439,6 +447,7 @@ def get_all_users():
 
 
 @app.route('/all_funding_balance', methods=['GET'])
+@jwt_required()
 def get_all_users_funding_balance():
     users = User.query.all()
     total_funding_balance = sum(user.fundingBalance for user in users)
@@ -450,6 +459,7 @@ def get_all_users_funding_balance():
 
 
 @app.route('/users_spot_balance', methods=['GET'])
+@jwt_required()
 def get_all_users_spot_balance():
     total_spot_balance = sum(user.spotBalance for user in User.query.all())
 
@@ -461,6 +471,7 @@ def get_all_users_spot_balance():
 
 
 @app.route('/users_total_balance', methods=['GET'])
+@jwt_required()
 def get_all_users_total_balance():
     total_spot_balance = sum(user.spotBalance for user in User.query.all())
     total_funding_balance = sum(
@@ -475,6 +486,7 @@ def get_all_users_total_balance():
 
 
 @app.route('/rt_funding_balance', methods=['GET'])
+@jwt_required()
 def get_all_rt_users_funding_balance():
     rt_users = User.query.filter_by(RT=True).all()
     total_funding_balance = sum(user.fundingBalance for user in rt_users)
@@ -487,6 +499,7 @@ def get_all_rt_users_funding_balance():
 
 
 @app.route('/rt_users_spot_balance', methods=['GET'])
+@jwt_required()
 def get_all_rt_users_spot_balance():
     rt_users = User.query.filter_by(RT=True).all()
     total_spot_balance = sum(user.spotBalance for user in rt_users)
@@ -499,6 +512,7 @@ def get_all_rt_users_spot_balance():
 
 
 @app.route('/all_rt_users_balance', methods=['GET'])
+@jwt_required()
 def get_all_rt_users_balance():
     rt_users = User.query.filter_by(RT=True).all()
 
@@ -514,6 +528,7 @@ def get_all_rt_users_balance():
 
 
 @app.route('/send_otp', methods=['POST'])
+@jwt_required()
 def send_otp():
     user_id = request.form.get('userID')
     user = User.query.get(user_id)

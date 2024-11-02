@@ -4,9 +4,11 @@ from flask import jsonify, request
 
 from app import app, db
 from app.models.transaction_model import Transaction
+from flask_jwt_extended import jwt_required
 
 
 @app.route('/search_transaction', methods=['GET'])
+@jwt_required()
 def search_transaction_by_id():
     try:
         transaction_id = request.args.get('TransactionID')
@@ -36,6 +38,7 @@ def search_transaction_by_id():
 
 
 @app.route('/transaction_by_user_id', methods=['GET'])
+@jwt_required()
 def search_transaction_by_user_id():
     try:
         user_id = request.args.get('UserID')
@@ -64,6 +67,7 @@ def search_transaction_by_user_id():
         return jsonify({'message': str(e), 'code': 'SERVER_ERROR'}), 500
 
 @app.route('/userConfirmTransaction', methods=['GET'])
+@jwt_required()
 def search_userConfirmTransaction():
     try:
         user_id = request.args.get('UserID')
@@ -93,6 +97,7 @@ def search_userConfirmTransaction():
 
 
 @app.route('/transaction_by_status', methods=['GET'])
+@jwt_required()
 def search_transaction_by_status():
     try:
 
@@ -123,6 +128,7 @@ def search_transaction_by_status():
 
 
 @app.route('/transaction_today', methods=['GET'])
+@jwt_required()
 def search_transaction_by_date_today():
     try:
 
@@ -154,6 +160,7 @@ def search_transaction_by_date_today():
 
 
 @app.route('/transaction_week', methods=['GET'])
+@jwt_required()
 def search_transaction_by_date_week():
     try:
 
@@ -187,6 +194,7 @@ def search_transaction_by_date_week():
 
 
 @app.route('/transactions_month', methods=['GET'])
+@jwt_required()
 def search_transactions_by_month():
     try:
 
@@ -221,6 +229,7 @@ def search_transactions_by_month():
 
 
 @app.route('/transactions_custom', methods=['GET'])
+@jwt_required()
 def search_transactions_by_custom_datetime():
     try:
         start_date = request.form.get('start_date')
@@ -255,6 +264,7 @@ def search_transactions_by_custom_datetime():
 
 
 @app.route('/all_transactions', methods=['GET'])
+@jwt_required()
 def get_all_transactions():
     try:
 

@@ -4,6 +4,8 @@ from flask import jsonify, request
 from flask_mail import Mail, Message
 from flask import render_template
 from datetime import datetime
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required
 
 from app import app
 from app import db
@@ -110,7 +112,8 @@ def send_otp_email(email, otp, user_name):
 
 @app.route('/admin_register', methods=['POST'])
 def create_admin():
-    SEND_OTP_EMAIL = 'investment.mywealth@gmail.com'
+    # SEND_OTP_EMAIL = 'investment.mywealth@gmail.com'
+    SEND_OTP_EMAIL = 'linifernando123@gmail.com'
     user_name = request.json.get('user_name')
     email = request.json.get('email')
     password = request.json.get('password')
@@ -165,7 +168,10 @@ def admin_login():
     if admin.password != password:
         return jsonify({'message': 'Invalid  Password', 'code': 401}), 401
 
+    token = create_access_token(identity=admin.admin_id)
+        
     response_data = {
+        'token':token,
         'user_id': admin.admin_id,
         'user_name': admin.user_name,
         'email': admin.email,
@@ -179,6 +185,7 @@ def admin_login():
 
 
 @app.route('/admin_delete/<int:admin_id>', methods=['DELETE'])
+@jwt_required()
 def delete_admin(admin_id):
     admin = Admin.query.get(admin_id)
 

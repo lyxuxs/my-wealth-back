@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 
 from config import Config
 
@@ -11,6 +12,7 @@ app.config.from_object(Config)
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+jwt = JWTManager(app) 
 
 from app.models import admin_model, levelA_model, levelB_model, levelC_model, mainAdmin_model, package_model, user_model, transfer_model,transferOut_model, withdrawal_model, \
     transaction_model, deposit_model, trade_model, profit_model, userProfit_model,commission_model

@@ -10,3 +10,6 @@ class Config:
     MAIL_USERNAME = 'investment.mywealth@gmail.com'
     MAIL_PASSWORD = 'kwns vldq aeza pafa'
     MAIL_DEFAULT_SENDER = 'investment.mywealth@gmail.com'
+
+    SECRET_KEY = "secret_key"
+    JWT_SECRET_KEY = "jwt_secret_key"
